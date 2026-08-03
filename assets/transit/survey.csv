@@ -1,0 +1,17 @@
+person,car_access,uses_transit,why,what_would_help,barrier,would_use_more,notes
+Mr. Shan,Own,rarely,inconvenient,More transits nearby,convenience,Yes,Ph.D. in Materials Science
+Minseo Sakong,Own,Regularly,Cheap and saves time,More transits nearby,No barrier,Yes,Student at RB High
+RB High sophomore,Parent,Sometimes,Takes too long,Faster frequency,Time,No,High school sophomore with no license
+Adult commuter,Own,Never,Driving is faster,Express bus option,Time,Maybe,Adult commuter. 20 Min by car vs 90 by transit
+Working parent,Own,Rarely,Need car for school pickup,Bus stop closer to school,Convenience,No,Must pick up kids after work and transit doesnt fit
+College student,None,Regularly,No car acess,More weekend routes,Cost,Yes,Community college student. Student monthly pass is cheaper than rideshare
+Retired resident,Sometimes,Rarely,Long walk to nearest stop,Shuttle to bus stop,Safety,Maybe,Lives in senior community. Transit stop is far away.
+Restaurant worker,Parent,Sometimes,Last bus is too early,Later night service,Time,Yes,Shift ends past the last transit time
+RB High Junior,Parent,Rarely,Station is too far. Needs to walk a lot.,Shuttle connecting neighborhoods to bus stops,Convenience,Maybe,Attends RB High. Route 945 exists but requires 0.9 mile walk on each end of a 4-minute bus ride. Total trip is 46 min vs 12 min by car.
+Stay-at-home parent,Own,Rarely,Too hard with stroller and young kids,Stroller-friendly stops,Convenience,No,Takes kids to Bernardo Heights park. Strollers make buses difficult.
+Gym Night shift worker,Own,Never,First bus comes too late for shift,Wider range of service time,Time,Maybe,Works at 24 Hour Fitness on Penasquitos Dr. Shift starts before Route 945 begins running.
+New Qualcomm hire,Own,Rarely,Driving is faster,Nothing. Not convenient for me,Time,No,Recently relocated to RB. Lives near Bernardo Oaks Dr. Transit hard to justify for him
+Small business owner,Own,Never,Need car for client visits around RB all day,More flexible routes,Convenience,No,Runs small business. Needs car to visit clients across the business park.
+8th grader neighbor,Parent,Sometimes,Parents worry about safety at stops,Better lighting,Safety,Yes,Attends Bernardo Heights Middle School. Parents allows going out with friends through transit when busy
+RB High senior,Own,Rarely,Just got license and excited to drive,Not sure,Convenience,Maybe,"17 years old, just got license. Lives near Bernardo Oaks Dr. Drives to RB High. Enjoys driving."
+Senior(66 yo) with no license,Sometimes,Never,Hard to walk to transit stops. Has bad knees,Not sure,convenience,Likely not,Lives in senior community near Bernardo Oaks Dr.

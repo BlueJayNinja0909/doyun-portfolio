@@ -64,8 +64,32 @@ This drove most of the design. As of writing:
 | VFX clips | **18 recorded.** 5 curated: Arrow rain, Slash effect, Fire slash, Ink swing (re-recorded), Starstruck |
 | Textures | **11 files**, including 6 flipbook sprite sheets |
 | Genesis Bloom | **Nothing yet.** Needs place URL, screenshots, capture, dashboard stats |
-| Transit study | **Nothing yet.** Needs raw route data, the document, survey responses, infographic |
+| Transit study | **Complete.** Workbook, summary doc, and infographic PDF received and parsed into 6 CSVs under `assets/transit/` |
 | SAF research | **Nothing, and blocked** on publication permission from Ladder/Cincy Carbon |
+
+### Transit study data (received 2026-08-02)
+
+Extracted to `assets/transit/`: `routes.csv`, `cost.csv`, `emissions.csv`, `survey.csv`,
+`survey-barriers.csv`, `assumptions.csv`. Originals stashed in `_inbox/transit-study/`.
+
+Arithmetic was independently verified against the stated assumptions (gas $5.49/gal at
+28 MPG, EV 3.5 mi/kWh at $0.45/kWh, $20 downtown parking) and is correct.
+
+**One correction found.** The summary document states safety was cited by 3 respondents.
+Recounting the 16 raw responses gives **safety = 2**; the full tally is convenience 7,
+time 5, safety 2, cost 1, "no barrier" 1. The workbook's own tally sheet omits the "no
+barrier" response and therefore sums to 15. The site must use the recomputed figures,
+and Doyun should fix the source document — it may be submitted elsewhere.
+
+**The headline finding is the emissions one, not the cost one.** An EV in San Diego
+emits 0.13 lbs CO₂/mile versus 0.18 for a transit bus passenger, because SDG&E's grid
+carries a high renewable share. This is genuinely counterintuitive and is the strongest
+thing in the study.
+
+Two caveats belong on the page, because stating them makes the finding stronger rather
+than weaker: the 0.18 figure is a SANDAG per-passenger average and therefore depends on
+bus occupancy, and the result is specific to San Diego's grid mix — it would invert in a
+coal-heavy region.
 
 The architecture must let us build now and fill content later. See §6.
 
@@ -136,12 +160,12 @@ at build time. Invalid frontmatter fails the build rather than rendering wrong.
 
 ```yaml
 slug: transit-vs-driving
-title: "Driving beat transit on time. Not on cost."
+title: "In San Diego, the electric car is cleaner than the bus."
 status: published          # draft | published
 year: 2025
 role: "Independent research"
 summary: "Four Rancho Bernardo routes, measured door-to-door."
-data: ./data/routes.csv    # optional
+data: ./data/cost.csv      # optional
 media:
   hero: ./media/hero.png
   gallery: [./media/survey.png]
@@ -189,8 +213,8 @@ Paper-white ground (`#F4F3EF`-ish), a serif/sans pairing with a real display fac
 generous measure, thin rules, one restrained accent. Reference points: *Our World in
 Data*, *The Pudding*. Large type set tight; body type set comfortable.
 
-Headlines state findings, not topics. "Driving beat transit on time. Not on cost." —
-not "Public Transit vs Driving."
+Headlines state findings, not topics. "In San Diego, the electric car is cleaner than
+the bus." — not "Public Transit vs Driving."
 
 ### VFX — cinematic
 
@@ -382,18 +406,26 @@ No visual regression suite — the cost exceeds the benefit at this size.
 | Risk | Mitigation |
 |---|---|
 | SAF permission never granted | Case study stays `draft`; site ships with two studies |
-| Transit raw data unrecoverable | Falls back to a static infographic; loses the strongest interactive moment |
+| ~~Transit raw data unrecoverable~~ | **Resolved** — full workbook received and parsed 2026-08-02 |
 | Genesis Bloom assets never gathered | Same `draft` mechanism |
 | Re-recording all clips is a large ask | Ship current transcodes; re-records are an upgrade, not a blocker |
 | Vercel bandwidth (100 GB/mo) | ~13,000 views at current weight; revisit only if the VFX site gets traction |
 
 **Open questions**
 
-1. Are the original place files available to re-record the other four clips with panels closed?
-2. Does the transit study's underlying data still exist, or only the finished document?
-3. What name and contact should the VFX site use? Clips are watermarked
-   `yippyfx@gmail.com`, which Doyun confirmed is his own address, predating his friend's
-   `yippyvfx.com` brand, and used with that friend's knowledge.
+1. ~~Place files available for re-recording?~~ **Yes** — confirmed 2026-08-02. Re-records
+   with panels closed are an available quality upgrade for the remaining four clips.
+2. ~~Does the transit data still exist?~~ **Yes** — received and parsed 2026-08-02.
+3. ~~What name and contact for the VFX site?~~ **Resolved** — `yippyfx@gmail.com` is
+   Doyun's own address, predates his friend's `yippyvfx.com` brand, and is used with that
+   friend's knowledge.
+4. **New:** Doyun's Downloads folder holds six other versions of the transit workbook
+   (`RB_Transit_Study_v4/v5/FINAL`) and three `RB_Transit_Community_Guide*.html` files.
+   The parsed workbook is assumed current; the community guide may be additional
+   publishable material worth reviewing.
+5. **New:** the infographic PDF has not been read — this machine lacks poppler, so PDF
+   rendering is unavailable. Either install it or have Doyun export the infographic as
+   PNG.
 
 ---
 

@@ -1,0 +1,18 @@
+parameter,value,unit_source
+Gas Price - Costco,5.49,"$/gal | Costco San Diego, Jun 2025"
+Gas Price - Convenience Store,5.7,"$/gal | Local stations, Jun 2025"
+Gas Car MPG (assumed),28,MPG | Typical sedan or SUV
+EV Efficiency (Tesla / Ioniq 5),3.5,miles/kWh | EPA average
+SDG&E Electricity Rate (est.),0.45,$/kWh
+MTS Single Ride Fare,2.5,$/ride
+MTS Day Pass,6,$/day | Good for 3+ rides in one day
+Student Monthly Pass,36,$/month | Requires student ID
+Regular Monthly Pass,72,$/month
+Pronto Transfer Fee,0,"Free within 2 hours, same direction"
+School - RB High School,0,Free - student permit
+Gym - 24 Hour Fitness,0,Free - shopping center lot
+Downtown SD - 1048 Seventh Ave,20,"Est. $15-$35/day | Google Search, Jun 2025"
+Torrey Pines State Beach,20,"Est. $15-$25 | CA State Parks, Jun 2025"
+Gas Car,0.7,lbs CO2 per mile | EPA standard
+Electric Car (SDG&E grid),0.13,"lbs CO2 per mile | SDG&E ~0.44 lbs/kWh, 3.5 mi/kWh"
+Transit Bus (per passenger),0.18,lbs CO2 per mile | SANDAG 2023 estimate

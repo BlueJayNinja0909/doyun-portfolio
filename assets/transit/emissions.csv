@@ -1,0 +1,5 @@
+route,label,miles,gas_lbs,ev_lbs,transit_lbs
+1,Home to School,3.5,2.45,0.455,0.63
+2,School to Gym,3.3,2.31,0.429,0.594
+3,Home to Downtown,25.2,17.64,3.276,4.536
+4,Home to Beach,17.8,12.46,2.314,3.204
