@@ -48,7 +48,7 @@ export function Flipbook({ texture, src }: { texture: Texture; src: string }) {
         @keyframes sprite-x-${id} { to { background-position-x: 100%; } }
         @keyframes sprite-y-${id} { to { background-position-y: 100%; } }
       `}</style>
-      <figcaption className="mt-2 text-xs text-white/45">{title}</figcaption>
+      <figcaption className="mt-2 text-xs text-white/60">{title}</figcaption>
     </figure>
   );
 }

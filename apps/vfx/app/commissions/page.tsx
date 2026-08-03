@@ -9,11 +9,11 @@ export default function Page() {
         </p>
       </header>
       <section className="rounded-xl border border-white/10 p-6">
-        <h2 className="text-xs uppercase tracking-[0.16em] text-white/40">Get in touch</h2>
+        <h2 className="text-xs uppercase tracking-[0.16em] text-white/60">Get in touch</h2>
         <a href="mailto:yippyfx@gmail.com" className="mt-3 block text-2xl font-semibold hover:underline">
           yippyfx@gmail.com
         </a>
-        <p className="mt-4 text-xs leading-relaxed text-white/40">
+        <p className="mt-4 text-xs leading-relaxed text-white/60">
           Include your game, the effect you have in mind, and your timeline.
         </p>
       </section>

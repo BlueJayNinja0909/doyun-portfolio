@@ -23,27 +23,78 @@ test('reel loads without fetching any video', async ({ page }) => {
   expect(videoRequests).toEqual([]);
 });
 
-// The Lightbox component (and the Motion library it pulls in) is now
-// prefetched on hover/focus/touchstart — before the click — so the click
-// itself doesn't hit a cold `Suspense fallback={null}` gap on a slow
-// connection. That prefetch must only ever warm the JS chunk, never the
-// clip itself: hovering the grid is exactly the "just browsing" case the
-// zero-mp4-on-load contract exists to protect, so it has to hold even
-// once intent-prefetching is in the mix.
-test('hovering a tile prefetches nothing video-related', async ({ page }) => {
+// Hovering a tile now plays a preview, so it does legitimately fetch video —
+// but only the small `<slug>-preview.mp4` encode (~90-170 KB), never the
+// full-quality clip, which stays behind the click. The distinction is the whole
+// point: a visitor sweeping the grid should cost a few hundred KB at most, not
+// the 9.3 MB of full clips.
+test('hovering a tile fetches only the small preview, never the full clip', async ({ page }) => {
   const videoRequests: string[] = [];
   page.on('request', (r) => {
     if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
   });
   await page.goto('/');
+
+  const tiles = page.getByRole('button');
+  await tiles.first().hover();
+  // The preview is armed behind a short hover-intent delay so that sweeping
+  // across the grid doesn't fire a request per tile.
+  await page.waitForTimeout(500);
+
+  expect(videoRequests.length).toBeGreaterThan(0);
+  for (const url of videoRequests) {
+    expect(url, `hover pulled a non-preview video: ${url}`).toMatch(/-preview\.mp4$/);
+  }
+});
+
+// The hover-intent delay is what keeps a cursor crossing the grid from firing a
+// request per tile. Without it, moving the mouse from the nav to the third tile
+// would download every preview it passed over.
+test('sweeping quickly across tiles does not fetch every preview', async ({ page }) => {
+  const videoRequests: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+  });
+  await page.goto('/');
+
+  // Drive the real pointer across the row in one continuous gesture. Using
+  // locator.hover() per tile would not test this — each call is its own protocol
+  // round-trip and dwells far longer on a tile than a human sweeping past it.
+  const boxes = [];
   const tiles = page.getByRole('button');
   const count = await tiles.count();
   for (let i = 0; i < count; i++) {
-    await tiles.nth(i).hover();
+    const b = await tiles.nth(i).boundingBox();
+    if (b) boxes.push(b);
   }
-  // Give the prefetched chunk request (and anything it might improperly
-  // trigger) a moment to actually fire.
-  await page.waitForTimeout(300);
+  expect(boxes.length).toBeGreaterThan(1);
+
+  await page.mouse.move(boxes[0].x - 40, boxes[0].y + boxes[0].height / 2);
+  for (const b of boxes) {
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 4 });
+  }
+  // Land clear of every tile so nothing stays armed.
+  const last = boxes[boxes.length - 1];
+  await page.mouse.move(last.x + last.width / 2, last.y + last.height + 260, { steps: 4 });
+  await page.waitForTimeout(400);
+
+  // A sweep may legitimately dwell on one tile long enough to arm it.
+  expect(
+    videoRequests.length,
+    `a continuous sweep fetched ${videoRequests.length} previews; the hover-intent debounce is not filtering pass-over`,
+  ).toBeLessThanOrEqual(1);
+});
+
+// Reduced motion means no auto-playing video anywhere, including hover previews.
+test('hovering fetches no video under reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const videoRequests: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+  });
+  await page.goto('/');
+  await page.getByRole('button').first().hover();
+  await page.waitForTimeout(500);
   expect(videoRequests).toEqual([]);
 });
 

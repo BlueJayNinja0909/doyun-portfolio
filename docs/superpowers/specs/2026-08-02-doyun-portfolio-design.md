@@ -413,6 +413,18 @@ Enforced, not aspirational:
   >
   > The gate is now ≥ 90, and the real numbers are recorded here rather than the target being
   > quietly deleted.
+  >
+  > **Amended again 2026-08-03.** Doyun asked for a scroll- and cursor-reactive constellation
+  > field and hover-to-preview video, and accepted the cost after being shown the estimate.
+  > Measured after: **88 / 88 / 88 performance, 100 / 100 / 100 accessibility.** The five-point
+  > drop is the continuous canvas, which is inherent to the feature rather than a defect. The
+  > gate is **≥ 85** while the constellation ships; removing it returns the site to ~93.
+  >
+  > The same run found a **pre-existing accessibility failure** the earlier measurement had
+  > missed: nav links, flipbook captions, and commissions body copy used white at 40–45%
+  > opacity, giving contrast ratios of 3.6–4.42 against the 4.5 AA minimum. The earlier
+  > "100 / 100 / 100" came from a desktop-preset run. All are now at ≥ 50% opacity, and every
+  > route scores 100. Anything below `text-white/50` on the `#050507` ground fails AA.
 - Initial page weight ≤ 800 KB
 - No layout shift from media — dimensions reserved before load
 

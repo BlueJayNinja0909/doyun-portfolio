@@ -17,6 +17,11 @@ fs.mkdirSync(OUT_T, { recursive: true });
 
 const ff = (args) => execFileSync(FF, ['-v', 'error', '-y', ...args], { stdio: 'inherit' });
 
+/** Hover-preview shape. Short enough to loop without feeling repetitive. */
+const PREVIEW_SECONDS = 5;
+/** Seconds of run-up before the saturation peak, so the effect builds on screen. */
+const PREVIEW_LEAD = 1.5;
+
 /** Frame index of peak colour saturation — where a VFX effect actually peaks. */
 function peakSaturationTime(input) {
   const out = execFileSync(
@@ -50,7 +55,24 @@ for (const clip of clips) {
   ff(['-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', '5',
       path.join(OUT_V, `${clip.slug}-poster.jpg`)]);
 
-  console.log(`${clip.slug}: encoded, poster at ${t}s`);
+  // Hover preview: a short, small loop that starts at the effect's peak so the
+  // interesting part plays immediately. Sized to load fast enough that hovering
+  // feels instant — the full-quality clip stays behind the click. Starting
+  // PREVIEW_LEAD seconds before the peak gives the effect a moment of run-up
+  // rather than cutting in at the brightest frame.
+  const previewStart = Math.max(0, t - PREVIEW_LEAD);
+  ff(['-ss', String(previewStart), '-t', String(PREVIEW_SECONDS), '-i', input, '-an',
+      '-vf', `crop=${clip.crop},scale=640:-2:flags=lanczos`,
+      '-c:v', 'libx264', '-profile:v', 'main', '-crf', '32', '-preset', 'slow',
+      '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+      path.join(OUT_V, `${clip.slug}-preview.mp4`)]);
+
+  const kb = (f) => Math.round(fs.statSync(path.join(OUT_V, f)).size / 1024);
+  console.log(
+    `${clip.slug}: clip ${kb(`${clip.slug}.mp4`)}KB, ` +
+    `poster ${kb(`${clip.slug}-poster.jpg`)}KB, ` +
+    `preview ${kb(`${clip.slug}-preview.mp4`)}KB (peak ${t}s)`,
+  );
 }
 
 // Textures are copied from the source named in each texture MDX's `source`

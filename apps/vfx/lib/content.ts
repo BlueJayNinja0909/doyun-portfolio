@@ -23,8 +23,16 @@ export function loadEffects(): Effect[] {
     }
     return result.data;
   });
+  // The hover preview is derived from the slug rather than declared in frontmatter —
+  // scripts/process-vfx.mjs always emits <slug>-preview.mp4 alongside the clip, so
+  // there is nothing for an author to get wrong. Checking it here means a published
+  // effect whose preview was never generated fails the build instead of shipping a
+  // tile that silently does nothing on hover.
   assertMediaExists(
-    all.map((e) => ({ status: e.status, media: [`videos/${e.video}`, `videos/${e.poster}`] })),
+    all.map((e) => ({
+      status: e.status,
+      media: [`videos/${e.video}`, `videos/${e.poster}`, `videos/${e.slug}-preview.mp4`],
+    })),
     PUBLIC,
   );
   return all.filter((e) => e.status === 'published').sort((a, b) => a.order - b.order);
