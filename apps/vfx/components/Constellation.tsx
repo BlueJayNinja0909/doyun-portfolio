@@ -19,11 +19,8 @@ import { useEffect, useRef } from 'react';
  *    no animation loop ever starts.
  */
 
-type Node = { x: number; y: number; vx: number; vy: number; depth: number };
+import { createNode, stepNode, nodeCount, type ConstellationNode } from '@/lib/constellation';
 
-const AREA_PER_NODE = 13_000;
-const MAX_NODES = 140;
-const MIN_NODES = 34;
 const LINK_DISTANCE = 170;
 const CURSOR_RADIUS = 190;
 const MAX_DPR = 1.5;
@@ -41,7 +38,7 @@ export function Constellation() {
 
     let width = 0;
     let height = 0;
-    let nodes: Node[] = [];
+    let nodes: ConstellationNode[] = [];
     let raf = 0;
     let running = false;
 
@@ -59,19 +56,7 @@ export function Constellation() {
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const count = Math.max(
-        MIN_NODES,
-        Math.min(MAX_NODES, Math.round((width * height) / AREA_PER_NODE)),
-      );
-      nodes = Array.from({ length: count }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.12,
-        vy: (Math.random() - 0.5) * 0.12,
-        // Depth drives both parallax strength and apparent size, so the field
-        // reads as having space in it rather than being a flat sheet of dots.
-        depth: 0.35 + Math.random() * 0.65,
-      }));
+      nodes = Array.from({ length: nodeCount(width, height) }, () => createNode(width, height));
     };
 
     const draw = () => {
@@ -82,14 +67,7 @@ export function Constellation() {
       cursor.y += (cursor.ty - cursor.y) * 0.12;
 
       const positions = nodes.map((n) => {
-        if (!reduced) {
-          n.x += n.vx;
-          n.y += n.vy;
-          if (n.x < -40) n.x = width + 40;
-          if (n.x > width + 40) n.x = -40;
-          if (n.y < -40) n.y = height + 40;
-          if (n.y > height + 40) n.y = -40;
-        }
+        if (!reduced) stepNode(n, width, height);
         // Deeper nodes shift less, which is what sells the parallax.
         const py = n.y - scrollEased * n.depth * 0.22;
         return { x: n.x, y: py, depth: n.depth };

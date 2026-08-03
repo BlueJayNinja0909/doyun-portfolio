@@ -98,6 +98,40 @@ test.describe('background layers', () => {
     ).toBeLessThanOrEqual(1);
   });
 
+  // Direction of travel is asserted in lib/__tests__/constellation.test.ts, not here.
+  // Sampling the canvas cannot prove it: once nodes wrap from top to bottom the field
+  // reaches equilibrium and its pixel centroid becomes statistically stationary, so a
+  // centroid-based test measures a startup transient and then stops being true —
+  // it failed both with the bug present and with it fixed.
+  //
+  // What the rendered canvas *can* prove is that the field does not drain, which is
+  // the failure a wrap bug would actually cause on screen.
+  test('the field keeps its density instead of draining off the top', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(800);
+
+    const litPixels = () =>
+      page.evaluate(() => {
+        const c = document.querySelector('canvas') as HTMLCanvasElement;
+        const ctx = c.getContext('2d')!;
+        const { data } = ctx.getImageData(0, 0, c.width, c.height);
+        let n = 0;
+        for (let i = 3; i < data.length; i += 4 * 11) if (data[i] > 8) n++;
+        return n;
+      });
+
+    const before = await litPixels();
+    expect(before, 'nothing was drawn to sample').toBeGreaterThan(0);
+
+    await page.waitForTimeout(4000);
+    const after = await litPixels();
+
+    expect(
+      after,
+      'density collapsed as nodes drifted off-screen — nodes leaving the top are not re-entering at the bottom',
+    ).toBeGreaterThan(before * 0.6);
+  });
+
   test('the canvas is hidden from assistive technology and not focusable', async ({ page }) => {
     await page.goto('/');
     const canvas = page.getByTestId('constellation');
