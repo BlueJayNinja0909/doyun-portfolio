@@ -1,0 +1,19 @@
+{
+  "name": "doyun-portfolio",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:vfx": "npm run dev -w @doyun/vfx",
+    "build:vfx": "npm run build -w @doyun/vfx",
+    "test": "vitest run",
+    "process:vfx": "node scripts/process-vfx.mjs"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^6.6.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.9.0"
+  }
+}
