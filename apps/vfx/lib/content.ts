@@ -39,7 +39,7 @@ export function loadTextures(): Texture[] {
     return result.data;
   });
   assertMediaExists(
-    all.map((t) => ({ status: t.status, media: [`textures/${t.source}`] })),
+    all.map((t) => ({ status: t.status, media: [`textures/${t.slug}.webp`] })),
     PUBLIC,
   );
   return all.filter((t) => t.status === 'published');

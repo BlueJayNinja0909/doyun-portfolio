@@ -57,6 +57,30 @@ describe('textureSchema against real content', () => {
   });
 });
 
+describe('loadTextures', () => {
+  // content.ts resolves its content/public dirs off process.cwd() at *module
+  // import* time, matching how `npm run build -w @doyun/vfx` actually executes
+  // (npm sets cwd to the package dir before running the script). Vitest doesn't
+  // chdir workers to --root, so to get real behaviour regardless of where
+  // `vitest` was invoked from, chdir first and then dynamically import the
+  // module so its top-level CONTENT/PUBLIC constants pick up the right cwd.
+  test('resolves every published texture against public/textures/<slug>.webp without throwing', async () => {
+    const appDir = path.join(__dirname, '..', '..');
+    const prevCwd = process.cwd();
+    process.chdir(appDir);
+    try {
+      const { loadTextures } = await import('../content');
+      const textures = loadTextures();
+      expect(textures.length).toBeGreaterThan(0);
+      textures.forEach((t) => {
+        expect(fs.existsSync(path.join(appDir, 'public', 'textures', `${t.slug}.webp`))).toBe(true);
+      });
+    } finally {
+      process.chdir(prevCwd);
+    }
+  });
+});
+
 describe('assertMediaExists', () => {
   test('ignores drafts with missing media', () => {
     expect(() =>
