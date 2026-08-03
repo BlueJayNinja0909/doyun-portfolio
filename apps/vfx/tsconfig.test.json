@@ -1,0 +1,16 @@
+{
+  "//": "Type-checks the test tooling that tsconfig.json deliberately excludes from the production build. Run with: npx tsc --noEmit -p apps/vfx/tsconfig.test.json",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "node"]
+  },
+  "include": [
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "playwright.config.ts",
+    "**/__tests__/**/*.ts",
+    "**/__tests__/**/*.tsx",
+    "e2e/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

@@ -12,7 +12,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "types": ["vitest/globals"],
     "incremental": true,
     "plugins": [
       {
@@ -31,5 +30,13 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "//": "Test tooling is excluded from the production type-check. `next build` type-checks this config, and vitest/playwright are dev-only tooling that is not resolvable from this workspace on Vercel — including them broke the deploy. Tests are still type-checked, via tsconfig.test.json.",
+  "exclude": [
+    "node_modules",
+    "vitest.config.ts",
+    "vitest.setup.ts",
+    "playwright.config.ts",
+    "**/__tests__/**",
+    "e2e/**"
+  ]
 }
