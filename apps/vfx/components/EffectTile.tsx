@@ -2,7 +2,19 @@
 
 import type { Effect } from '@/lib/schema';
 
-export function EffectTile({ effect, onOpen }: { effect: Effect; onOpen: (e: Effect) => void }) {
+export function EffectTile({
+  effect,
+  onOpen,
+  priority = false,
+}: {
+  effect: Effect;
+  onOpen: (e: Effect) => void;
+  /** First tile in the grid is the mobile LCP element (Lighthouse's
+   *  lcp-discovery-insight audit confirmed this) — it should be fetched
+   *  eagerly and with fetchpriority=high rather than competing with
+   *  below-the-fold tiles for bandwidth. Every other tile stays lazy. */
+  priority?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -21,7 +33,8 @@ export function EffectTile({ effect, onOpen }: { effect: Effect; onOpen: (e: Eff
         alt={effect.title}
         width={effect.width}
         height={effect.height}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
         decoding="async"
         className="aspect-[1280/638] w-full object-cover transition-transform duration-500
                    will-change-transform group-hover:scale-[1.03] motion-reduce:transition-none
