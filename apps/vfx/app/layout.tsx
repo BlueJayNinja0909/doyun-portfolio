@@ -10,6 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="bg-[#050507]">
       <body className="antialiased">
+        <div className="ambient" aria-hidden="true" />
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 text-xs uppercase tracking-[0.16em] text-white/45">
           <a href="/" className="hover:text-white">Doyun.vfx</a>
           <span className="flex gap-6">
