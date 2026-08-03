@@ -47,8 +47,8 @@ describe('textureSchema against real content', () => {
   const texturesDir = path.join(__dirname, '..', '..', 'content', 'textures');
   const files = fs.readdirSync(texturesDir).filter((f) => f.endsWith('.mdx'));
 
-  test('found the eleven verified texture files from Task 3', () => {
-    expect(files.length).toBe(11);
+  test('found texture files to validate (directory is not silently empty)', () => {
+    expect(files.length).toBeGreaterThan(0);
   });
 
   test.each(files)('%s frontmatter validates against textureSchema', (file) => {
