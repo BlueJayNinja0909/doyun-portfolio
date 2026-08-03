@@ -70,9 +70,15 @@ test('Y row-advance duration stays locked to the X row duration on a trimmed gri
   const css = container.querySelector('style')!.textContent!;
 
   const match = css.match(
-    /sprite-x-\S+\s+([\d.]+)s steps\((\d+)\)[^,]*,\s*sprite-y-\S+\s+([\d.]+)s steps\((\d+)\)/,
+    /sprite-x-\S+\s+([\d.]+)s steps\((\d+),\s*jump-none\)[^,]*,\s*sprite-y-\S+\s+([\d.]+)s steps\((\d+),\s*jump-none\)/,
   );
-  expect(match).not.toBeNull();
+  expect(
+    match,
+    'Expected both sprite animations to use steps(N, jump-none). Percentage ' +
+      'background-position puts the N cells at 0%, 1/(N-1), ... 100%, so a plain ' +
+      'steps(N) lands every frame between two cells and the sheet pans instead of ' +
+      'flipping. See e2e/flipbook.spec.ts for the behavioural test.',
+  ).not.toBeNull();
   const [, xDuration, , yDuration, yRows] = match!;
 
   const rowDurationFromX = Number(xDuration);
