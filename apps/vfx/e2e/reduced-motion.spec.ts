@@ -24,7 +24,10 @@ for (const path of ROUTES) {
     await gotoReduced(page, path);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     // Nav is shared chrome present (and visible) on every route.
-    await expect(page.getByRole('link', { name: 'Doyun.vfx' })).toBeVisible();
+    // Located by href rather than by its text: the point of this assertion is that
+    // the shared nav stays visible under reduced motion, not what the wordmark
+    // currently says. Matching on the text made a rename look like a motion bug.
+    await expect(page.locator('nav a[href="/"]')).toBeVisible();
   });
 }
 

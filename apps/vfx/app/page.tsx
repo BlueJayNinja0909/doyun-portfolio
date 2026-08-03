@@ -10,10 +10,15 @@ export default function Page() {
     <main className="mx-auto min-h-dvh max-w-6xl px-6 pb-24">
       <header className="pt-24 pb-12">
         {/* LCP element — deliberately not animated */}
-        <h1 className="text-6xl font-extrabold tracking-[-0.045em] sm:text-8xl">
+        {/* Fluid rather than stepped, because "Doyun Lee" is held together by a
+            non-breaking space and so has a hard minimum width. At a fixed 60px it
+            measures 342px and overflowed a 320px viewport by 22px. clamp() scales it
+            with the viewport instead of jumping at a breakpoint, so it fits every
+            width down to 320 while still reaching 96px on desktop. */}
+        <h1 className="text-[clamp(2.25rem,11vw,6rem)] font-extrabold tracking-[-0.045em]">
           {/* /50 is the lowest opacity that clears WCAG AA on this ground (5.2:1),
-              so the suffix still recedes from the wordmark without failing contrast. */}
-          Doyun<span className="text-white/50">.vfx</span>
+              so the suffix still recedes from the name without failing contrast. */}
+          Doyun&nbsp;Lee <span className="text-white/50">VFX</span>
         </h1>
         <p className="mt-4 max-w-md text-sm leading-relaxed text-white/50">
           Roblox visual effects — particles, trails, and impact work.

@@ -4,7 +4,7 @@ import { CursorGlow } from '@/components/CursorGlow';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Doyun — Roblox VFX',
+  title: 'Doyun Lee — Roblox VFX',
   description: 'Stylized Roblox visual effects: particles, trails, and impact work.',
 };
 
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             the first passing step (5.2); /65 here clears it with margin while still
             reading as secondary against the headline. */}
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 text-xs uppercase tracking-[0.16em] text-white/65">
-          <a href="/" className="hover:text-white">Doyun.vfx</a>
+          <a href="/" className="hover:text-white">Doyun Lee VFX</a>
           <span className="flex gap-6">
             <a href="/textures/" className="hover:text-white">Textures</a>
             <a href="/commissions/" className="hover:text-white">Commissions</a>
