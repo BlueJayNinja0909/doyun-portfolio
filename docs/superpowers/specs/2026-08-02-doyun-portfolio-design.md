@@ -452,7 +452,7 @@ fighting it:
 - **Academic:** `doyunlee1025@gmail.com` (as printed on the infographic)
 - **VFX:** `yippyfx@gmail.com` (as watermarked on every clip)
 
-**The phone number printed on the infographic (858-306-5549) must not appear on either
+**The personal phone number printed on the infographic must not appear on either
 site.** A phone number on a public page is scraped within days and is a standing spam
 and social-engineering vector; email is sufficient for both audiences. If the
 infographic is offered as a download, that region should be cropped or the number
