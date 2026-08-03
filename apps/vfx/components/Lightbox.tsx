@@ -84,7 +84,7 @@ export function Lightbox({ effect, onClose }: { effect: Effect | null; onClose: 
           className="fixed inset-0 z-50 grid place-items-center bg-black/92 p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={{ opacity: 0, pointerEvents: 'none' }}
           onClick={onClose}
         >
           <motion.div

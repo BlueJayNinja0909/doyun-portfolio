@@ -1,27 +1,20 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * This site is unconditionally dark by design — it does not follow the
+ * visitor's OS light/dark preference and has no theme toggle. The ground
+ * colour lives on <html> (see layout.tsx: className="bg-[#050507]") so
+ * that the .ambient layer, which paints behind body content, is not
+ * hidden by an opaque body background.
+ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  color: #ededed;
   font-family: Arial, Helvetica, sans-serif;
 }
 

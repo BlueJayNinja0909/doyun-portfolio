@@ -10,7 +10,7 @@ export default function Page() {
         <h1 className="text-5xl font-extrabold tracking-[-0.04em]">Texture and flipbook studies</h1>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/50">
           Hand-built sprite sheets. These are separate practice work, not the
-          textures used in the effects above. Hover or focus any sheet to play it.
+          textures used in the reel. Hover or focus any sheet to play it.
         </p>
       </header>
       <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-4">

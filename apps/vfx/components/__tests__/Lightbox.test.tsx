@@ -82,6 +82,33 @@ test('removes the video element once closed (effect becomes null)', async () => 
   await waitFor(() => expect(document.querySelector('video')).toBeNull());
 });
 
+// The `fixed inset-0 z-50` overlay covers the whole page. Motion applies
+// non-animatable exit props (like `pointerEvents`) synchronously the
+// instant the exit transition starts, before the opacity animation itself
+// runs to completion — which matters because that animation can be
+// arbitrarily delayed (a backgrounded tab pauses rAF) or interrupted. If
+// `exit` only set `opacity: 0`, the overlay would keep swallowing clicks
+// for that entire window. Checked synchronously, right after the effect
+// becomes null and before the exit animation has had any chance to
+// finish, so this only passes if pointer-events is turned off immediately.
+test('overlay stops blocking clicks the instant it starts to close', async () => {
+  const { rerender } = render(<Lightbox effect={effect} onClose={() => {}} />);
+  const dialog = screen.getByRole('dialog', { name: /ink swing/i });
+  expect(dialog).not.toHaveStyle({ pointerEvents: 'none' });
+
+  rerender(<Lightbox effect={null} onClose={() => {}} />);
+
+  // Non-animatable exit props are applied synchronously by Motion, but the
+  // update can land a tick after React's own commit (it's driven by
+  // Motion's own effect timing, not React's), so poll briefly rather than
+  // asserting on the exact same microtask. This must resolve well before
+  // the node is actually removed from the DOM (asserted elsewhere), which
+  // is the whole point: pointer-events must turn off before the animation
+  // — let alone the unmount — completes.
+  await waitFor(() => expect(dialog).toHaveStyle({ pointerEvents: 'none' }));
+  expect(document.body.contains(dialog)).toBe(true);
+});
+
 test('under reduced motion, the dialog still opens and is fully usable, without the spring scale', () => {
   stubMatchMedia(true);
   resetReducedMotionSingleton();

@@ -23,6 +23,9 @@ export function Flipbook({ texture, src }: { texture: Texture; src: string }) {
       <div
         role="img"
         tabIndex={0}
+        // `cells` (the full grid capacity), not `texture.grid.frames`, is the
+        // correct count here — the animation always plays the full grid (see
+        // the comment above), so `cells` is what a listener actually hears.
         aria-label={`${title} — animated sprite sheet, ${cells} frames`}
         data-testid="flipbook-frame"
         className={`aspect-square w-full rounded-lg bg-white/5 bg-no-repeat outline-none

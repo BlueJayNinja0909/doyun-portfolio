@@ -21,8 +21,6 @@ export const effectSchema = z.object({
   height: z.number().int().positive(),
   order: z.number().int().nonnegative().default(99),
   note: z.string().optional(),
-  /** Texture slug this effect pairs with, for the texture-to-effect section. */
-  pairsWith: slug.optional(),
 });
 
 export const textureSchema = z
@@ -30,6 +28,9 @@ export const textureSchema = z
     slug,
     title: z.string().min(1),
     status,
+    /** Provenance only (e.g. the original flipbook filename) — not a URL
+     * or path. Public files are served from `<slug>.webp`; nothing reads
+     * this field to resolve where the asset lives. */
     source: z.string().min(1),
     grid: z.object({
       cols: z.number().int().positive(),
