@@ -11,6 +11,8 @@ describe('effectSchema', () => {
     status: 'published',
     video: 'arrow-rain.mp4',
     poster: 'arrow-rain-poster.jpg',
+    width: 1280,
+    height: 638,
     order: 1,
   };
 

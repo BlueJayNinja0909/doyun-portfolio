@@ -12,6 +12,13 @@ export const effectSchema = z.object({
   status,
   video: z.string().min(1),
   poster: z.string().min(1),
+  /** Intrinsic poster/video dimensions in pixels — required so the lightbox
+   * can reserve the correct box before load without guessing. Clips are not
+   * all the same aspect ratio (e.g. ink-swing was re-recorded without the
+   * Roblox Studio side panels, so it crops to 1280x584 vs 1280x638 for the
+   * rest), so this must come from real per-entry metadata, not a constant. */
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
   order: z.number().int().nonnegative().default(99),
   note: z.string().optional(),
   /** Texture slug this effect pairs with, for the texture-to-effect section. */
