@@ -1,6 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+
+/**
+ * The 3D avatar is loaded only when it is actually going to be used: a fine pointer,
+ * no reduced-motion preference, and a viewport wide enough to show it. Everyone else
+ * gets the flat render, which is the same avatar and 48KB.
+ *
+ * This is why the 3D path is affordable at all — three.js, the Draco decoder and the
+ * 371KB mesh never reach a phone.
+ */
+const AvatarScene = lazy(() => import('./AvatarScene'));
 
 /**
  * Doyun's actual Roblox avatar, rendered from Roblox's public thumbnail endpoint
@@ -34,6 +44,7 @@ export function Avatar({ className }: { className?: string }) {
   const current = useRef({ x: 0, y: 0 });
   const raf = useRef(0);
   const running = useRef(false);
+  const [use3d, setUse3d] = useState(false);
 
   const tick = useCallback(() => {
     const el = inner.current;
@@ -72,6 +83,15 @@ export function Avatar({ className }: { className?: string }) {
     // the figure would simply sit at its rest angle forever.
     if (mq('(prefers-reduced-motion: reduce)') || !mq('(pointer: fine)')) return;
 
+    // The same gates decide the 3D upgrade, plus a viewport wide enough to show the
+    // mesh — below that the figure renders too small for the detail to be visible and
+    // the download would be wasted. Deferred a beat so it never competes with first
+    // paint, and the flat render keeps tilting until it arrives.
+    let upgrade: ReturnType<typeof setTimeout> | undefined;
+    if (window.innerWidth >= 900) {
+      upgrade = setTimeout(() => setUse3d(true), 400);
+    }
+
     const onMove = (e: PointerEvent) => {
       // Measured against the viewport rather than the element: the figure should lean
       // toward the cursor wherever it is on the page, not only while it is overhead.
@@ -88,6 +108,7 @@ export function Avatar({ className }: { className?: string }) {
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerleave', onLeave);
     return () => {
+      clearTimeout(upgrade);
       cancelAnimationFrame(raf.current);
       running.current = false;
       window.removeEventListener('pointermove', onMove);
@@ -100,11 +121,23 @@ export function Avatar({ className }: { className?: string }) {
       ref={wrap}
       className={className}
       data-testid="avatar"
-      style={{ perspective: '900px' }}
+      style={{ perspective: '900px', position: 'relative' }}
     >
+      {/* Once the mesh is ready it replaces the flat render entirely — showing both
+          would double the figure. The image stays mounted until then so there is never
+          an empty hole in the hero. */}
+      {use3d && (
+        <Suspense fallback={null}>
+          <div className="absolute inset-0" data-testid="avatar-3d">
+            <AvatarScene />
+          </div>
+        </Suspense>
+      )}
+
       <div
         ref={inner}
-        className="flex h-full w-full items-center justify-center will-change-transform"
+        className={`flex h-full w-full items-center justify-center will-change-transform
+                    transition-opacity duration-500 ${use3d ? 'opacity-0' : 'opacity-100'}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

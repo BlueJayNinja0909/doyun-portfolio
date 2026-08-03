@@ -13,14 +13,17 @@
     "process:vfx": "node scripts/process-vfx.mjs",
     "dev:academic": "npm run dev -w @doyun/academic",
     "build:academic": "npm run build -w @doyun/academic",
-    "typecheck": "tsc --noEmit -p apps/vfx && tsc --noEmit -p apps/vfx/tsconfig.test.json && tsc --noEmit -p apps/academic"
+    "typecheck": "tsc --noEmit -p apps/vfx && tsc --noEmit -p apps/vfx/tsconfig.test.json && tsc --noEmit -p apps/academic",
+    "process:avatar": "node scripts/process-avatar.mjs"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^5.0.0",
+    "gltf-pipeline": "^4.3.1",
     "jsdom": "^26.0.0",
+    "obj2gltf": "^3.2.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"
   }
