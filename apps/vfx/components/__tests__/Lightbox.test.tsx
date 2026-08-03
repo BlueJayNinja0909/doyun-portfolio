@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { hasReducedMotionListener, prefersReducedMotion } from 'motion-dom';
 import { Lightbox } from '../Lightbox';
+import type { Effect } from '@/lib/schema';
 
 const effect = {
   slug: 'ink-swing', title: 'Ink Swing', status: 'published' as const,
@@ -87,4 +89,58 @@ test('under reduced motion, the dialog still opens and is fully usable, without 
   const dialog = screen.getByRole('dialog', { name: /ink swing/i });
   expect(dialog).toBeInTheDocument();
   expect(document.querySelector('video')).not.toBeNull();
+});
+
+// aria-modal="true" is a promise to assistive tech that everything outside
+// the dialog is inert. If Tab can walk out into the page behind it, that
+// promise is false, and a screen-reader user ends up interacting with
+// controls they've been told are unreachable. These two tests assert the
+// wrap in both directions. Order in the DOM is video, then close button —
+// close button gets initial focus (existing behavior), so it is "last".
+describe('focus trap', () => {
+  test('Tab from the last focusable element wraps to the first', async () => {
+    render(<Lightbox effect={effect} onClose={() => {}} />);
+    const closeButton = screen.getByRole('button', { name: /close/i });
+    expect(closeButton).toHaveFocus();
+
+    await userEvent.tab();
+
+    const video = document.querySelector('video')!;
+    expect(video).toHaveFocus();
+  });
+
+  test('Shift+Tab from the first focusable element wraps to the last', async () => {
+    render(<Lightbox effect={effect} onClose={() => {}} />);
+    const video = document.querySelector('video')!;
+    video.focus();
+
+    await userEvent.tab({ shift: true });
+
+    const closeButton = screen.getByRole('button', { name: /close/i });
+    expect(closeButton).toHaveFocus();
+  });
+});
+
+test('returns focus to the element that opened the dialog once it closes', async () => {
+  // A harness that mirrors real usage: an EffectTile-like trigger button
+  // controls whether the Lightbox is mounted with an effect, exactly how
+  // Task 9's page will wire EffectTile's onOpen into Lightbox's effect prop.
+  function Harness() {
+    const [open, setOpen] = useState<Effect | null>(null);
+    return (
+      <div>
+        <button onClick={() => setOpen(effect)}>Open Ink Swing</button>
+        <Lightbox effect={open} onClose={() => setOpen(null)} />
+      </div>
+    );
+  }
+
+  render(<Harness />);
+  const opener = screen.getByRole('button', { name: /open ink swing/i });
+  await userEvent.click(opener);
+
+  await screen.findByRole('dialog', { name: /ink swing/i });
+  await userEvent.keyboard('{Escape}');
+
+  await waitFor(() => expect(opener).toHaveFocus());
 });
