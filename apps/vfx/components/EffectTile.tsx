@@ -5,10 +5,17 @@ import type { Effect } from '@/lib/schema';
 export function EffectTile({
   effect,
   onOpen,
+  onIntent,
   priority = false,
 }: {
   effect: Effect;
   onOpen: (e: Effect) => void;
+  /** Fired on mouseenter/focus/touchstart — a hint that a click/tap on
+   *  this tile is likely imminent, used by ReelGrid to start prefetching
+   *  the lazy-loaded Lightbox chunk ahead of the actual click. Purely a
+   *  perf hint: onOpen (and thus the click/Enter path) works identically
+   *  whether or not this ever fires. */
+  onIntent?: () => void;
   /** First tile in the grid is the mobile LCP element (Lighthouse's
    *  lcp-discovery-insight audit confirmed this) — it should be fetched
    *  eagerly and with fetchpriority=high rather than competing with
@@ -19,6 +26,9 @@ export function EffectTile({
     <button
       type="button"
       onClick={() => onOpen(effect)}
+      onMouseEnter={onIntent}
+      onFocus={onIntent}
+      onTouchStart={onIntent}
       className="group relative block w-full overflow-hidden rounded-xl border border-white/10
                  outline-none ring-offset-2 ring-offset-[#050507] focus-visible:ring-2 focus-visible:ring-white/70"
     >

@@ -23,6 +23,30 @@ test('reel loads without fetching any video', async ({ page }) => {
   expect(videoRequests).toEqual([]);
 });
 
+// The Lightbox component (and the Motion library it pulls in) is now
+// prefetched on hover/focus/touchstart — before the click — so the click
+// itself doesn't hit a cold `Suspense fallback={null}` gap on a slow
+// connection. That prefetch must only ever warm the JS chunk, never the
+// clip itself: hovering the grid is exactly the "just browsing" case the
+// zero-mp4-on-load contract exists to protect, so it has to hold even
+// once intent-prefetching is in the mix.
+test('hovering a tile prefetches nothing video-related', async ({ page }) => {
+  const videoRequests: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+  });
+  await page.goto('/');
+  const tiles = page.getByRole('button');
+  const count = await tiles.count();
+  for (let i = 0; i < count; i++) {
+    await tiles.nth(i).hover();
+  }
+  // Give the prefetched chunk request (and anything it might improperly
+  // trigger) a moment to actually fire.
+  await page.waitForTimeout(300);
+  expect(videoRequests).toEqual([]);
+});
+
 test('clicking a tile opens the lightbox and loads that clip', async ({ page }) => {
   const videoRequests: { url: string; status: number }[] = [];
   page.on('response', (r) => {
