@@ -1,0 +1,8 @@
+{
+  "name": "@doyun/motion",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "peerDependencies": { "motion": "^12.43.0", "react": "^19.0.0" }
+}
