@@ -2,3 +2,5 @@
 _inbox/
 node_modules/
 assets/vfx/compare/
+test-results/
+playwright-report/
