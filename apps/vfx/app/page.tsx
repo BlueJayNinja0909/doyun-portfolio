@@ -3,6 +3,7 @@ import { ReelGrid } from '@/components/ReelGrid';
 import { Avatar } from '@/components/Avatar';
 import { GradientShimmer } from '@/components/GradientShimmer';
 import { ContainerScroll } from '@/components/ContainerScroll';
+import { ScrollToWork } from '@/components/ScrollToWork';
 
 export default function Page() {
   const effects = loadEffects();
@@ -34,14 +35,14 @@ export default function Page() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href="#work"
+            <ScrollToWork
+              targetId="work"
               className="rounded-lg border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-semibold
                          transition-colors hover:border-white/30 hover:bg-white/[0.10]
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             >
               See the work
-            </a>
+            </ScrollToWork>
             <a
               href="/commissions/"
               className="px-2 py-2.5 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline
@@ -76,7 +77,10 @@ export default function Page() {
             </>
           }
         >
-          <ReelGrid effects={featured} priorityFirst />
+          {/* No priorityFirst: the reel now sits below the fold, so eagerly fetching its
+              first poster at high priority competes with the avatar, which is the real
+              LCP element. Two high-priority images is worse than one. */}
+          <ReelGrid effects={featured} />
         </ContainerScroll>
 
         {practice.length > 0 && (

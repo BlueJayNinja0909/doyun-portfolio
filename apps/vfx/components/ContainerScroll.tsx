@@ -35,9 +35,9 @@ export function ContainerScroll({
     offset: ['start end', 'end start'],
   });
 
-  const rotate = useTransform(scrollYProgress, [0, 0.45], [22, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.45], [0.92, 1]);
-  const lift = useTransform(scrollYProgress, [0, 0.45], [64, 0]);
+  const rotate = useTransform(scrollYProgress, [0, 0.5], [34, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [0.86, 1]);
+  const lift = useTransform(scrollYProgress, [0, 0.5], [90, 0]);
 
   // Reduced motion is handled in CSS (`.scroll-panel`, globals.css), not by branching
   // here.

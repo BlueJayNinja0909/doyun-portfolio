@@ -1,107 +1,126 @@
 'use client';
 
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 /**
- * Lazy wrapper for the 3D rig.
+ * Doyun's actual Roblox avatar, rendered from Roblox's public thumbnail endpoint
+ * (user 569624262) and served from this site rather than hot-linked.
  *
- * three.js and react-three-fiber are around 150KB gzipped. Loading them eagerly would
- * put the whole library in the initial bundle of a page whose job is to render text
- * fast — so the scene is imported only once its container is near the viewport, and
- * never at all for a visitor who prefers reduced motion.
+ * This replaced a procedural R6 rig built from boxes. The rig was accurate for a plain
+ * dummy but could never be *his* avatar — layered hoodie, hair, horned hat, katanas and
+ * a waist aura are not reproducible from primitives, and pretending otherwise would
+ * have shipped a generic noob on a portfolio whose whole point is craft.
  *
- * The fallback is a real silhouette rather than a spinner: it occupies the exact box
- * the canvas will, so nothing shifts when the scene swaps in, and if the module fails
- * to load the page still shows an avatar rather than a hole.
+ * Roblox's 3D-avatar endpoint returns a real mesh but now requires account
+ * authentication, which is not a credential worth handling for a decorative hero. The
+ * 2D render is public, exact, and 20KB — against roughly 150KB of three.js for the
+ * approximation. Dropping the 3D library also means touch devices get the avatar
+ * instead of a fallback silhouette.
+ *
+ * The trade is that a flat render cannot turn its head. It tilts and parallaxes toward
+ * the cursor instead, which reads as responsiveness without pretending to be 3D.
  */
-const AvatarScene = lazy(() => import('./AvatarScene'));
 
-function Silhouette() {
-  return (
-    <div className="flex h-full w-full items-center justify-center" aria-hidden="true">
-      <svg viewBox="0 0 120 150" className="h-[78%] w-auto opacity-[0.13]" fill="currentColor">
-        <rect x="42" y="2" width="36" height="18" rx="2" />
-        <rect x="36" y="26" width="48" height="48" rx="2" />
-        <rect x="10" y="26" width="22" height="48" rx="2" />
-        <rect x="88" y="26" width="22" height="48" rx="2" />
-        <rect x="38" y="78" width="22" height="48" rx="2" />
-        <rect x="60" y="78" width="22" height="48" rx="2" />
-      </svg>
-    </div>
-  );
-}
+/** Maximum tilt in degrees. Past this the flatness becomes obvious. */
+const MAX_TILT = 9;
+/** How far the figure shifts against the tilt, in px — this is what sells the depth. */
+const MAX_SHIFT = 14;
+const EASE = 0.09;
 
 export function Avatar({ className }: { className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [load, setLoad] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const raf = useRef(0);
+  const running = useRef(false);
+
+  const tick = useCallback(() => {
+    const el = inner.current;
+    if (!el) return;
+
+    current.current.x += (target.current.x - current.current.x) * EASE;
+    current.current.y += (target.current.y - current.current.y) * EASE;
+
+    const { x, y } = current.current;
+    el.style.transform =
+      `rotateY(${x * MAX_TILT}deg) rotateX(${-y * MAX_TILT}deg) ` +
+      `translate3d(${x * MAX_SHIFT}px, ${y * MAX_SHIFT * 0.6}px, 0)`;
+
+    // Stop once settled. An idle page should cost nothing.
+    if (
+      Math.abs(target.current.x - x) > 0.0015 ||
+      Math.abs(target.current.y - y) > 0.0015
+    ) {
+      raf.current = requestAnimationFrame(tick);
+    } else {
+      running.current = false;
+    }
+  }, []);
+
+  const start = useCallback(() => {
+    if (running.current) return;
+    running.current = true;
+    raf.current = requestAnimationFrame(tick);
+  }, [tick]);
 
   useEffect(() => {
     const mq = (q: string) =>
       typeof window.matchMedia === 'function' && window.matchMedia(q).matches;
 
-    // A visitor who asked for reduced motion gets the static silhouette and never
-    // downloads three.js at all.
-    if (mq('(prefers-reduced-motion: reduce)')) return;
+    // No tilt for reduced motion, and none on touch — there is no cursor to follow, so
+    // the figure would simply sit at its rest angle forever.
+    if (mq('(prefers-reduced-motion: reduce)') || !mq('(pointer: fine)')) return;
 
-    // Neither does a touch device. The entire point of this rig is that it follows the
-    // cursor, and a phone has no cursor to follow — so the 3D library would be ~150KB
-    // and half a second of main-thread work spent on a feature that cannot fire. The
-    // silhouette is the honest thing to show there.
-    if (!mq('(pointer: fine)')) return;
-
-    const node = ref.current;
-    if (!node) return;
-
-    // The rig sits above the fold, so an IntersectionObserver alone would fire
-    // immediately and pull ~150KB of 3D library into the critical path — measured at
-    // 23 Lighthouse points on mobile. Waiting for the page to finish loading and then
-    // for an idle moment costs the visitor nothing (the silhouette holds the space)
-    // and keeps three.js off the path to first paint entirely.
-    let cancelled = false;
-    let idle: number | undefined;
-
-    const start = () => {
-      if (cancelled) return;
-      const schedule = (cb: () => void) =>
-        typeof requestIdleCallback === 'function'
-          ? (idle = requestIdleCallback(cb, { timeout: 2500 }))
-          : window.setTimeout(cb, 600);
-
-      if (typeof IntersectionObserver === 'undefined') {
-        schedule(() => setLoad(true));
-        return;
-      }
-      const io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) {
-            io.disconnect();
-            schedule(() => setLoad(true));
-          }
-        },
-        { rootMargin: '200px' },
-      );
-      io.observe(node);
+    const onMove = (e: PointerEvent) => {
+      // Measured against the viewport rather than the element: the figure should lean
+      // toward the cursor wherever it is on the page, not only while it is overhead.
+      target.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      target.current.y = (e.clientY / window.innerHeight) * 2 - 1;
+      start();
+    };
+    const onLeave = () => {
+      target.current.x = 0;
+      target.current.y = 0;
+      start();
     };
 
-    if (document.readyState === 'complete') start();
-    else window.addEventListener('load', start, { once: true });
-
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerleave', onLeave);
     return () => {
-      cancelled = true;
-      window.removeEventListener('load', start);
-      if (idle !== undefined && typeof cancelIdleCallback === 'function') cancelIdleCallback(idle);
+      cancelAnimationFrame(raf.current);
+      running.current = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerleave', onLeave);
     };
-  }, []);
+  }, [start]);
 
   return (
-    <div ref={ref} className={className} data-testid="avatar">
-      {load ? (
-        <Suspense fallback={<Silhouette />}>
-          <AvatarScene />
-        </Suspense>
-      ) : (
-        <Silhouette />
-      )}
+    <div
+      ref={wrap}
+      className={className}
+      data-testid="avatar"
+      style={{ perspective: '900px' }}
+    >
+      <div
+        ref={inner}
+        className="flex h-full w-full items-center justify-center will-change-transform"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/avatar/doyun.webp"
+          alt="Doyun's Roblox avatar"
+          width={463}
+          height={620}
+          // Above the fold and the largest thing in the hero, so it is fetched eagerly
+          // and at high priority rather than competing with below-the-fold posters.
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="h-full w-auto max-w-full object-contain
+                     drop-shadow-[0_28px_44px_rgba(0,0,0,0.55)]"
+        />
+      </div>
     </div>
   );
 }

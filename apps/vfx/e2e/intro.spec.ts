@@ -28,14 +28,48 @@ test.describe('intro page', () => {
     await expect(span).toHaveText('Doyun Lee VFX');
   });
 
-  test('the avatar renders and tracks the cursor', async ({ page }) => {
+  test('the avatar renders and leans toward the cursor', async ({ page }) => {
     await page.goto('/');
-    const canvas = page.locator('[data-testid="avatar"] canvas');
-    await expect(canvas).toBeAttached({ timeout: 15_000 });
+    const img = page.locator('[data-testid="avatar"] img');
+    await expect(img).toBeVisible();
 
-    // The canvas must actually draw something, not just exist.
-    const drew = await canvas.evaluate((el: HTMLCanvasElement) => el.width > 0 && el.height > 0);
-    expect(drew, 'the avatar canvas has no drawing surface').toBe(true);
+    // It must be the real render, not a placeholder.
+    const loaded = await img.evaluate(
+      (el: HTMLImageElement) => el.complete && el.naturalWidth > 100,
+    );
+    expect(loaded, 'the avatar image did not load').toBe(true);
+
+    const transform = () =>
+      page.locator('[data-testid="avatar"] img').evaluate(
+        (el) => getComputedStyle(el.parentElement!).transform,
+      );
+
+    await page.mouse.move(80, 700, { steps: 10 });
+    await page.waitForTimeout(600);
+    const left = await transform();
+
+    await page.mouse.move(1200, 120, { steps: 10 });
+    await page.waitForTimeout(600);
+    const right = await transform();
+
+    expect(left, 'the avatar never tilted').not.toBe('none');
+    expect(right, 'the avatar did not respond to a cursor move').not.toBe(left);
+  });
+
+  test('the avatar is served locally, not hot-linked from Roblox', async ({ page }) => {
+    // Hot-linking would put a hero image on a CDN outside this site's control, and
+    // Roblox thumbnail URLs are regenerated periodically — the link would rot.
+    const external: string[] = [];
+    page.on('request', (r) => {
+      const u = r.url();
+      if (/rbxcdn|roblox\.com/i.test(u)) external.push(u);
+    });
+    await page.goto('/');
+    await page.waitForTimeout(1200);
+    expect(external, 'the page requested assets from Roblox at runtime').toEqual([]);
+
+    const src = await page.locator('[data-testid="avatar"] img').getAttribute('src');
+    expect(src).toMatch(/^\/avatar\//);
   });
 
   test('the avatar reserves its box before the scene loads', async ({ page }) => {
@@ -46,24 +80,26 @@ test.describe('intro page', () => {
     expect(box!.height, 'the avatar container has no reserved height').toBeGreaterThan(200);
   });
 
-  test('three.js is never downloaded under reduced motion', async ({ page }) => {
+  test('the avatar is visible but static under reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const chunks: string[] = [];
-    page.on('request', (r) => {
-      if (r.url().endsWith('.js')) chunks.push(r.url());
-    });
-
     await page.goto('/');
-    await page.waitForTimeout(2500);
 
-    // A visitor who asked for reduced motion gets the static silhouette. Shipping them
-    // ~150KB of 3D library for something that will never animate is pure waste.
-    const canvas = await page.locator('[data-testid="avatar"] canvas').count();
-    expect(canvas, 'the 3D scene mounted despite prefers-reduced-motion').toBe(0);
+    // Reduced motion means less movement, not a hole in the layout — the avatar is
+    // content, and it still renders.
+    await expect(page.locator('[data-testid="avatar"] img')).toBeVisible();
 
-    // The silhouette still has to be there — reduced motion means less movement,
-    // not a hole in the layout.
-    await expect(page.locator('[data-testid="avatar"] svg')).toBeVisible();
+    const before = await page
+      .locator('[data-testid="avatar"] img')
+      .evaluate((el) => getComputedStyle(el.parentElement!).transform);
+
+    await page.mouse.move(1200, 120, { steps: 10 });
+    await page.waitForTimeout(600);
+
+    const after = await page
+      .locator('[data-testid="avatar"] img')
+      .evaluate((el) => getComputedStyle(el.parentElement!).transform);
+
+    expect(after, 'the avatar tilted despite prefers-reduced-motion').toBe(before);
   });
 
   test('the reel is still reachable and loads no video up front', async ({ page }) => {
