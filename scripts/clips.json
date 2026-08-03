@@ -1,7 +1,69 @@
 [
-  { "slug": "arrow-rain",   "src": "Arrow rain showcase.mp4",   "crop": "1752:874:0:142" },
-  { "slug": "slash-effect", "src": "Slash effect showcase.mp4",  "crop": "1752:874:0:142" },
-  { "slug": "fire-slash",   "src": "Fire slash showcase.mp4",    "crop": "1752:874:0:142" },
-  { "slug": "starstruck",   "src": "Starstruck showcase .mp4",   "crop": "1752:874:0:142" },
-  { "slug": "ink-swing",    "src": "Better Ink Swing.mp4",       "crop": "1918:874:0:142" }
+  {
+    "slug": "arrow-rain",
+    "src": "Arrow rain showcase.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "slash-effect",
+    "src": "Slash effect showcase.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "fire-slash",
+    "src": "Fire slash showcase.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "starstruck",
+    "src": "Starstruck showcase .mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "ink-swing",
+    "src": "Better Ink Swing.mp4",
+    "crop": "1918:874:0:142"
+  },
+  {
+    "slug": "basic-slash",
+    "src": "Basic slash.mp4",
+    "crop": "1752:874:0:142",
+    "posterAt": 0.8
+  },
+  {
+    "slug": "black-orb",
+    "src": "Black Orb Showcase.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "fire-ball",
+    "src": "Fire ball 1.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "galaxy-impact-1",
+    "src": "Galaxy Impact 1.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "galaxy-impact-2",
+    "src": "Galaxy Impact 2.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "gojo-domain",
+    "src": "gojo domain vfx.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "solo-leveling-aura",
+    "src": "Solo leveling aura attempt.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "wind-smoke",
+    "src": "Wind and smoke practice.mp4",
+    "crop": "1752:874:0:142",
+    "posterAt": 0.67
+  }
 ]

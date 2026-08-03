@@ -107,7 +107,11 @@ export function EffectTile({
         />
       )}
 
-      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 text-left">
+      {/* The title sits at the TOP of the tile, not the bottom. Every clip carries a
+          burned-in "Made by Doyun Lee" credit in its lower-left corner, and a bottom
+          overlay covered it — the one piece of text on these tiles that must stay
+          readable is the author's own attribution. */}
+      <span className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/85 to-transparent p-4 text-left">
         <span className="block text-sm font-semibold">{effect.title}</span>
       </span>
     </button>

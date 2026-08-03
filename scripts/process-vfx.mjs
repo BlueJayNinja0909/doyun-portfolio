@@ -56,7 +56,12 @@ for (const clip of clips) {
       '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
       path.join(OUT_V, `${clip.slug}.mp4`)]);
 
-  const t = peakSaturationTime(input);
+  // Peak saturation finds the right frame for most effects, but it fails when the
+  // effect itself is desaturated (grey smoke) or sits against a bright skybox that
+  // out-saturates it — it then picks empty sky or a frame dominated by a Studio
+  // panel. `posterAt` in clips.json overrides it with a hand-picked timestamp for
+  // those clips, chosen off a contact sheet rather than guessed.
+  const t = clip.posterAt !== undefined ? clip.posterAt : peakSaturationTime(input);
   ff(['-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', '5',
       path.join(OUT_V, `${clip.slug}-poster.jpg`)]);
 

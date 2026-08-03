@@ -3,6 +3,9 @@ import { ReelGrid } from '@/components/ReelGrid';
 
 export default function Page() {
   const effects = loadEffects();
+  const featured = effects.filter((e) => e.tier === 'featured');
+  const practice = effects.filter((e) => e.tier === 'practice');
+
   return (
     <main className="mx-auto min-h-dvh max-w-6xl px-6 pb-24">
       <header className="pt-24 pb-12">
@@ -17,7 +20,38 @@ export default function Page() {
           Commissions open.
         </p>
       </header>
-      <ReelGrid effects={effects} />
+
+      <section aria-labelledby="selected-heading">
+        <h2
+          id="selected-heading"
+          className="mb-5 text-xs uppercase tracking-[0.18em] text-white/60"
+        >
+          Selected work
+        </h2>
+        {/* Only the featured grid gets `priority`, since its first tile is the
+            page's LCP element. Giving both sections a priority tile would put two
+            eager image fetches in competition on mobile. */}
+        <ReelGrid effects={featured} priorityFirst />
+      </section>
+
+      {practice.length > 0 && (
+        <section aria-labelledby="practice-heading" className="mt-20">
+          <h2
+            id="practice-heading"
+            className="mb-2 text-xs uppercase tracking-[0.18em] text-white/60"
+          >
+            Practice and studies
+          </h2>
+          {/* Saying this plainly costs nothing and is worth more than padding the
+              section above. A hiring dev judges you on your weakest visible clip,
+              so the honest framing protects the featured row. */}
+          <p className="mb-5 max-w-md text-xs leading-relaxed text-white/50">
+            Earlier passes and experiments. Kept up because the working-out is
+            worth showing, not because it is the strongest work here.
+          </p>
+          <ReelGrid effects={practice} />
+        </section>
+      )}
     </main>
   );
 }

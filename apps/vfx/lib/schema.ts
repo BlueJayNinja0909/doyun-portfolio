@@ -19,6 +19,12 @@ export const effectSchema = z.object({
    * rest), so this must come from real per-entry metadata, not a constant. */
   width: z.number().int().positive(),
   height: z.number().int().positive(),
+  /**
+   * Which section of the reel this belongs to. Defaults to `practice` so a new entry
+   * never lands in the featured row by omission — promoting work should be a
+   * deliberate edit, not the result of forgetting a field.
+   */
+  tier: z.enum(['featured', 'practice']).default('practice'),
   order: z.number().int().nonnegative().default(99),
   note: z.string().optional(),
 });

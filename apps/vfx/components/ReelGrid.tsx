@@ -49,7 +49,19 @@ function preloadLightbox() {
   }
 }
 
-export function ReelGrid({ effects }: { effects: Effect[] }) {
+export function ReelGrid({
+  effects,
+  priorityFirst = false,
+}: {
+  effects: Effect[];
+  /**
+   * Marks this grid's first tile as the LCP element (eager + fetchpriority=high).
+   * Only one grid on a page should set it — two eager image fetches competing for
+   * bandwidth on mobile is worse than one, which is why the practice section
+   * below the fold leaves every tile lazy.
+   */
+  priorityFirst?: boolean;
+}) {
   const [open, setOpen] = useState<Effect | null>(null);
   const [everOpened, setEverOpened] = useState(false);
 
@@ -67,7 +79,7 @@ export function ReelGrid({ effects }: { effects: Effect[] }) {
             effect={e}
             onOpen={handleOpen}
             onIntent={preloadLightbox}
-            priority={i === 0}
+            priority={priorityFirst && i === 0}
           />
         ))}
       </div>
