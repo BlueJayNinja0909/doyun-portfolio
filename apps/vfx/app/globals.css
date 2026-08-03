@@ -18,10 +18,22 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/*
+ * Background layer order, from back to front:
+ *   <html> background-color  ground
+ *   .ambient       z-index -2   gradients + grain
+ *   <canvas>       z-index -1   constellation
+ *   page content   auto
+ *
+ * .ambient must NOT set an opaque background-color. It did, at z-index -1, which
+ * painted a solid sheet over the constellation canvas — the canvas ran and cost
+ * real CPU while being completely invisible. The ground colour belongs on <html>
+ * and nowhere else.
+ */
 .ambient {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
   background-image:
     url('/textures/ambient.webp'),
@@ -30,5 +42,4 @@ body {
   background-attachment: fixed;
   background-position: center;
   background-size: cover;
-  background-color: #050507;
 }

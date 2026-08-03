@@ -21,10 +21,10 @@ import { useEffect, useRef } from 'react';
 
 type Node = { x: number; y: number; vx: number; vy: number; depth: number };
 
-const AREA_PER_NODE = 26_000;
-const MAX_NODES = 90;
-const MIN_NODES = 22;
-const LINK_DISTANCE = 132;
+const AREA_PER_NODE = 13_000;
+const MAX_NODES = 140;
+const MIN_NODES = 34;
+const LINK_DISTANCE = 170;
 const CURSOR_RADIUS = 190;
 const MAX_DPR = 2;
 
@@ -116,7 +116,7 @@ export function Constellation() {
             ? `rgba(${Math.round(150 + nearCursor * 90)}, ${Math.round(190 + nearCursor * 50)}, 255, ${
                 strength * (0.1 + nearCursor * 0.42)
               })`
-            : `rgba(150, 170, 255, ${strength * 0.1})`;
+            : `rgba(155, 180, 255, ${strength * 0.22})`;
           ctx.lineWidth = 0.6 + nearCursor * 0.7;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
@@ -129,9 +129,9 @@ export function Constellation() {
         const nearCursor = cursor.active
           ? Math.max(0, 1 - Math.hypot(p.x - cursor.x, p.y - cursor.y) / CURSOR_RADIUS)
           : 0;
-        const r = (0.9 + p.depth * 1.1) * (1 + nearCursor * 0.7);
+        const r = (1.2 + p.depth * 1.5) * (1 + nearCursor * 0.7);
         ctx.fillStyle = `rgba(${Math.round(180 + nearCursor * 60)}, ${Math.round(200 + nearCursor * 40)}, 255, ${
-          0.18 + p.depth * 0.22 + nearCursor * 0.4
+          0.30 + p.depth * 0.34 + nearCursor * 0.36
         })`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
@@ -207,7 +207,9 @@ export function Constellation() {
       ref={canvasRef}
       data-testid="constellation"
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      // z-index -1 puts this above .ambient (-2) and below page content. It must not
+      // go further back than .ambient, or the gradient layer paints over it.
+      className="pointer-events-none fixed inset-0 -z-[1] h-full w-full"
     />
   );
 }
