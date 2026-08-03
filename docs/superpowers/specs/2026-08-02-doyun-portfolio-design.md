@@ -75,11 +75,25 @@ Extracted to `assets/transit/`: `routes.csv`, `cost.csv`, `emissions.csv`, `surv
 Arithmetic was independently verified against the stated assumptions (gas $5.49/gal at
 28 MPG, EV 3.5 mi/kWh at $0.45/kWh, $20 downtown parking) and is correct.
 
-**One correction found.** The summary document states safety was cited by 3 respondents.
-Recounting the 16 raw responses gives **safety = 2**; the full tally is convenience 7,
-time 5, safety 2, cost 1, "no barrier" 1. The workbook's own tally sheet omits the "no
-barrier" response and therefore sums to 15. The site must use the recomputed figures,
-and Doyun should fix the source document — it may be submitted elsewhere.
+**One correction found, and it is narrow.** The summary `.docx` states safety was cited
+by 3 respondents. Recounting the 16 raw responses gives **safety = 2** — convenience 7,
+time 5, safety 2, cost 1, "no barrier" 1.
+
+The infographic and the community guide both already state safety = 2, and the guide
+explicitly footnotes the no-barrier respondent. **Only the `.docx` is wrong.** Doyun
+should fix that one document, since it may be submitted elsewhere. The site uses the
+recomputed figures throughout.
+
+**Additional source received: `RB_Transit_Community_Guide_FINAL.html`** — the infographic
+PDF's source, and effectively a print-ready summary of the study. Its copy is strong
+enough to reuse directly rather than rewriting: findings are already stated as
+conclusions ("EVs beat the bus in San Diego") rather than topics.
+
+**A detail the spreadsheet did not contain.** Route 1's 46-minute transit trip decomposes
+into **21 min walk + 4 min bus + 21 min walk.** The bus is four minutes; the walking is
+42. This is the single most compelling fact in the study — it reframes the problem from
+"transit is slow" to "transit is unreachable" and directly justifies policy
+recommendation #2 (the neighborhood shuttle).
 
 **The headline finding is the emissions one, not the cost one.** An EV in San Diego
 emits 0.13 lbs CO₂/mile versus 0.18 for a transit bus passenger, because SDG&E's grid
@@ -233,9 +247,14 @@ Three per site. Everything else stays quiet so these land.
 3. **Texture-to-effect pairing** — a sheet shown beside the finished effect it belongs to.
 
 **Academic**
-1. **The transit chart draws itself** as the argument builds on scroll.
-2. **Sticky figure, scrolling narration.**
-3. **Numbers count up** to their real values.
+1. **21 / 4 / 21.** Route 1's 46-minute transit trip animates as a stacked bar — a long
+   walk, a four-minute bus ride, another long walk. The bus segment is almost invisible.
+   This is the strongest single moment on either site and should be built first.
+2. **The parking bar drops in.** The cost chart shows driving winning on Routes 1–2,
+   then the $20 parking bar lands on Routes 3–4 and flips the result. The reader watches
+   the conclusion happen instead of being told it.
+3. **The EV undercuts the bus.** Emissions bars land in expected order — gas 0.70,
+   transit 0.18 — then the EV bar comes in at 0.13, below the bus.
 
 ### What makes it look expensive
 
@@ -419,13 +438,25 @@ No visual regression suite — the cost exceeds the benefit at this size.
 3. ~~What name and contact for the VFX site?~~ **Resolved** — `yippyfx@gmail.com` is
    Doyun's own address, predates his friend's `yippyvfx.com` brand, and is used with that
    friend's knowledge.
-4. **New:** Doyun's Downloads folder holds six other versions of the transit workbook
-   (`RB_Transit_Study_v4/v5/FINAL`) and three `RB_Transit_Community_Guide*.html` files.
-   The parsed workbook is assumed current; the community guide may be additional
-   publishable material worth reviewing.
-5. **New:** the infographic PDF has not been read — this machine lacks poppler, so PDF
-   rendering is unavailable. Either install it or have Doyun export the infographic as
-   PNG.
+4. ~~Which workbook version is current?~~ **Resolved** — the file Doyun sent is the most
+   recently modified (2026-08-02 23:26). The `RB_Transit_Study_*.xlsx` files are 18 KB
+   exports, not the master. `RB_Transit_Community_Guide_FINAL.html` is the latest guide
+   and has been incorporated.
+5. ~~Infographic unreadable?~~ **Resolved** — Doyun supplied it as an image.
+
+## 14a. Contact and privacy
+
+The two sites use different addresses, which reinforces the separation rather than
+fighting it:
+
+- **Academic:** `doyunlee1025@gmail.com` (as printed on the infographic)
+- **VFX:** `yippyfx@gmail.com` (as watermarked on every clip)
+
+**The phone number printed on the infographic (858-306-5549) must not appear on either
+site.** A phone number on a public page is scraped within days and is a standing spam
+and social-engineering vector; email is sufficient for both audiences. If the
+infographic is offered as a download, that region should be cropped or the number
+removed before publishing.
 
 ---
 
