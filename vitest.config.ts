@@ -7,6 +7,7 @@ export default defineConfig({
   test: {
     projects: [
       'apps/vfx',
+      'apps/academic',
       'packages/*',
       {
         test: {

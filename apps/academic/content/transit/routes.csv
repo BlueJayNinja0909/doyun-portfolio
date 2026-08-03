@@ -1,0 +1,5 @@
+route,label,endpoints,miles,drive_time_a,drive_time_b,transit,extra_minutes
+1,Home to School,RB Inn to RB High School,3.5,9-12 min,9-16 min,"46 min | Rt 945, 0 transfers (21 min walk + 4 min bus + 21 min walk",34 min
+2,School to Gym,RB High to 24 Hr Fitness,3.3,9-16 min,8-14 min,"27 min | Rt 20, 0 transfers",11 min
+3,Home to Downtown,RB Inn to 1048 Seventh Ave,25.2,30-50 min,28-40 min,"98 min | Rt 945 to 235, 1 transfer",48 min
+4,Home to Beach,RB Inn to Torrey Pines Beach,17.8,22-35 min,22-35 min,183 min | 3 transfers | NOT PRACTICAL,148 min

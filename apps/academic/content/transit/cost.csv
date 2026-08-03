@@ -1,0 +1,5 @@
+route,label,gas_car,ev,transit
+1,Home to School,1.373,0.9,5
+2,School to Gym,1.294,0.849,5
+3,Home to Downtown,29.882,26.48,5
+4,Home to Beach,26.98,24.577,20

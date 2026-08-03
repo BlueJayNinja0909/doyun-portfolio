@@ -9,8 +9,10 @@
     "dev:vfx": "npm run dev -w @doyun/vfx",
     "build:vfx": "npm run build -w @doyun/vfx",
     "test": "vitest run",
-    "test:e2e": "npm run build:vfx && playwright test --config apps/vfx/playwright.config.ts",
-    "process:vfx": "node scripts/process-vfx.mjs"
+    "test:e2e": "playwright test --config apps/vfx/playwright.config.ts && playwright test --config apps/academic/playwright.config.ts",
+    "process:vfx": "node scripts/process-vfx.mjs",
+    "dev:academic": "npm run dev -w @doyun/academic",
+    "build:academic": "npm run build -w @doyun/academic"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.0",
