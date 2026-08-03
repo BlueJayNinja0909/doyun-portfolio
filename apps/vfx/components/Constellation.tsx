@@ -26,7 +26,7 @@ const MAX_NODES = 140;
 const MIN_NODES = 34;
 const LINK_DISTANCE = 170;
 const CURSOR_RADIUS = 190;
-const MAX_DPR = 2;
+const MAX_DPR = 1.5;
 
 export function Constellation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

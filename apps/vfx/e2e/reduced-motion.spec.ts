@@ -1,3 +1,4 @@
+import { publishedTextureCount } from './helpers';
 import { test, expect, type Page } from '@playwright/test';
 
 // Automates the brief's Step 6 ("DevTools -> Rendering -> emulate
@@ -45,10 +46,13 @@ test('lightbox opens without scaling under reduced motion, and stays visible', a
   await expect(page.locator('video')).toBeVisible();
 });
 
-test('all nine flipbooks stay visible under reduced motion', async ({ page }) => {
+test('every flipbook stays visible under reduced motion', async ({ page }) => {
   await gotoReduced(page, '/textures/');
   const flipbooks = page.getByTestId('flipbook-frame');
-  await expect(flipbooks).toHaveCount(9);
+  // Counted from the content directory rather than hardcoded, so adding a texture
+  // does not fail this test. The property under test is that all of them stay
+  // visible, not how many there happen to be.
+  await expect(flipbooks).toHaveCount(publishedTextureCount());
   const count = await flipbooks.count();
   for (let i = 0; i < count; i++) {
     await expect(flipbooks.nth(i)).toBeVisible();

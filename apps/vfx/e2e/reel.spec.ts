@@ -1,3 +1,4 @@
+import { publishedTextureCount } from './helpers';
 import { test, expect } from '@playwright/test';
 
 // --- The performance contract -------------------------------------------
@@ -182,10 +183,10 @@ test('no console errors on any route', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('textures page renders nine flipbooks', async ({ page }) => {
+test('the textures page renders every published sheet', async ({ page }) => {
   await page.goto('/textures/');
   const flipbooks = page.getByTestId('flipbook-frame');
-  await expect(flipbooks).toHaveCount(9);
+  await expect(flipbooks).toHaveCount(publishedTextureCount());
 });
 
 test('commissions page shows the contact email and no phone number', async ({ page }) => {

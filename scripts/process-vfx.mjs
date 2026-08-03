@@ -22,6 +22,11 @@ const PREVIEW_SECONDS = 5;
 /** Seconds of run-up before the saturation peak, so the effect builds on screen. */
 const PREVIEW_LEAD = 1.5;
 
+/** Sheets larger than this are re-encoded; the textures page loads all of them at once. */
+const TEXTURE_MAX_KB = 150;
+/** libwebp quality for oversized sheets. High enough that sprite edges stay crisp. */
+const TEXTURE_REENCODE_QUALITY = 78;
+
 /** Frame index of peak colour saturation — where a VFX effect actually peaks. */
 function peakSaturationTime(input) {
   const out = execFileSync(
@@ -93,8 +98,27 @@ for (const file of textureFiles) {
     );
   }
 
-  fs.copyFileSync(srcPath, path.join(OUT_T, `${data.slug}.webp`));
-  console.log(`${data.slug}: copied from ${data.source}`);
+  const destPath = path.join(OUT_T, `${data.slug}.webp`);
+  const srcKb = Math.round(fs.statSync(srcPath).size / 1024);
+
+  // Every sheet on the textures page loads at once, so a few oversized sources
+  // dominate that page's weight. Sheets over the threshold are re-encoded; the
+  // rest are copied untouched, because re-encoding an already-small webp only
+  // loses quality for no gain.
+  if (srcKb > TEXTURE_MAX_KB) {
+    ff(['-i', srcPath, '-c:v', 'libwebp', '-quality', String(TEXTURE_REENCODE_QUALITY),
+        '-compression_level', '6', '-preset', 'drawing', destPath]);
+    const outKb = Math.round(fs.statSync(destPath).size / 1024);
+    console.log(`${data.slug}: re-encoded ${srcKb}KB -> ${outKb}KB (${data.source})`);
+  } else {
+    fs.copyFileSync(srcPath, destPath);
+    console.log(`${data.slug}: copied ${srcKb}KB (${data.source})`);
+  }
 }
+
+const totalKb = fs
+  .readdirSync(OUT_T)
+  .reduce((n, f) => n + fs.statSync(path.join(OUT_T, f)).size, 0) / 1024;
+console.log(`textures total: ${Math.round(totalKb)}KB across ${fs.readdirSync(OUT_T).length} sheets`);
 
 console.log('done');

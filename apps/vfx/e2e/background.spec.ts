@@ -105,3 +105,62 @@ test.describe('background layers', () => {
     expect(await canvas.evaluate((n) => getComputedStyle(n).pointerEvents)).toBe('none');
   });
 });
+
+test.describe('cursor glow', () => {
+  test('follows the pointer and never intercepts clicks', async ({ page }) => {
+    await page.goto('/');
+    const glow = page.getByTestId('cursor-glow');
+    await expect(glow).toBeAttached();
+    await expect(glow).toHaveAttribute('aria-hidden', 'true');
+    expect(await glow.evaluate((n) => getComputedStyle(n).pointerEvents)).toBe('none');
+
+    const read = () =>
+      glow.evaluate((n) => {
+        const m = new DOMMatrixReadOnly(getComputedStyle(n).transform);
+        return { x: m.m41, y: m.m42, opacity: Number(getComputedStyle(n).opacity) };
+      });
+
+    await page.mouse.move(300, 250, { steps: 10 });
+    await page.waitForTimeout(500);
+    const a = await read();
+
+    await page.mouse.move(900, 600, { steps: 10 });
+    await page.waitForTimeout(500);
+    const b = await read();
+
+    expect(a.opacity, 'the glow never became visible after pointer movement').toBeGreaterThan(0);
+    expect(
+      Math.hypot(b.x - a.x, b.y - a.y),
+      'the glow did not move with the pointer',
+    ).toBeGreaterThan(200);
+  });
+});
+
+test.describe('texture sheet loading', () => {
+  // 19 sheets total ~1.6MB. CSS background images have no loading="lazy", so without
+  // deferral the textures page blows the 800KB initial-weight budget on first paint.
+  test('sheets below the fold are not fetched until scrolled toward', async ({ page }) => {
+    const sheets = new Set<string>();
+    page.on('request', (r) => {
+      const u = r.url();
+      if (u.endsWith('.webp') && !u.endsWith('ambient.webp')) sheets.add(u);
+    });
+
+    await page.goto('/textures/');
+    await page.waitForTimeout(1200);
+    const initial = sheets.size;
+
+    const total = await page.locator('[data-testid="flipbook-frame"]').count();
+    expect(total).toBeGreaterThan(12);
+    expect(
+      initial,
+      `all ${total} sheets loaded on first paint — the lazy attach is not working. ` +
+        'A likely cause is seeding the visible state from `typeof IntersectionObserver`, ' +
+        'which is undefined during prerender and bakes the url() into the static HTML.',
+    ).toBeLessThan(total);
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1500);
+    expect(sheets.size, 'sheets never loaded after scrolling to them').toBe(total);
+  });
+});

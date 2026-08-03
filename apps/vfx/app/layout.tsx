@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Constellation } from '@/components/Constellation';
+import { CursorGlow } from '@/components/CursorGlow';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <div className="ambient" aria-hidden="true" />
         <Constellation />
+        <CursorGlow />
         {/* On the #050507 ground, white at /40 gives a contrast ratio of 3.6 and /45
             gives 4.42 — both under the 4.5 WCAG AA minimum for text this size. /50 is
             the first passing step (5.2); /65 here clears it with margin while still
