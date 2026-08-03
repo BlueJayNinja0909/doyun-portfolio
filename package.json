@@ -12,7 +12,8 @@
     "test:e2e": "playwright test --config apps/vfx/playwright.config.ts && playwright test --config apps/academic/playwright.config.ts",
     "process:vfx": "node scripts/process-vfx.mjs",
     "dev:academic": "npm run dev -w @doyun/academic",
-    "build:academic": "npm run build -w @doyun/academic"
+    "build:academic": "npm run build -w @doyun/academic",
+    "typecheck": "tsc --noEmit -p apps/vfx && tsc --noEmit -p apps/vfx/tsconfig.test.json && tsc --noEmit -p apps/academic"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.0",

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { EffectTile } from '../EffectTile';
 
 const effect = {
-  slug: 'arrow-rain', title: 'Arrow Rain', status: 'published' as const,
+  slug: 'arrow-rain', title: 'Arrow Rain', status: 'published' as const, tier: 'featured' as const,
   video: 'arrow-rain.mp4', poster: 'arrow-rain-poster.jpg', width: 1280, height: 638, order: 1,
 };
 
@@ -34,7 +34,7 @@ test('reserves the same uniform container aspect ratio regardless of intrinsic d
   // rest are 1280x638. The grid tile must still present a uniform box so the
   // grid doesn't look ragged — the poster crops via object-cover.
   const inkSwing = {
-    slug: 'ink-swing', title: 'Ink Swing', status: 'published' as const,
+    slug: 'ink-swing', title: 'Ink Swing', status: 'published' as const, tier: 'featured' as const,
     video: 'ink-swing.mp4', poster: 'ink-swing-poster.jpg', width: 1280, height: 584, order: 2,
   };
   const { unmount } = render(<EffectTile effect={effect} onOpen={() => {}} />);

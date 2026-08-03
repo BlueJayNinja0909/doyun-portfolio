@@ -43,3 +43,77 @@ body {
   background-position: center;
   background-size: cover;
 }
+
+/*
+ * Cursor spotlight for the reel tiles.
+ *
+ * Defined once here rather than injected as a <style> tag per card — the version this
+ * is adapted from renders one copy of these rules inside every instance, which on this
+ * grid would mean sixteen identical stylesheets in the document.
+ *
+ * Coordinates are element-local (see useSpotlight.ts), so this needs no
+ * `background-attachment: fixed`. That property is what makes the original expensive:
+ * a fixed-attachment background repaints on every scroll frame.
+ *
+ * Everything animates opacity only, and the whole effect is gated behind
+ * prefers-reduced-motion.
+ */
+.spotlight {
+  --spot-x: 50%;
+  --spot-y: 50%;
+  --spot-opacity: 0;
+  --spot-shift: 0.5;
+  /* Violet through pink, matching the site's accent range rather than a full rainbow. */
+  --spot-hue: calc(258 + (var(--spot-shift) * 68));
+  --spot-size: 340px;
+}
+
+.spotlight::before,
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--spot-opacity);
+  transition: opacity 320ms ease;
+  border-radius: inherit;
+}
+
+/* Interior wash — sits over the poster, under the title. */
+.spotlight::before {
+  z-index: 1;
+  background: radial-gradient(
+    var(--spot-size) var(--spot-size) at var(--spot-x) var(--spot-y),
+    hsl(var(--spot-hue) 95% 72% / 0.34),
+    transparent 70%
+  );
+}
+
+/*
+ * Border light. Masking to the padding box leaves only the 1px border lit, which is
+ * what reads as a rim rather than a second wash.
+ */
+.spotlight::after {
+  z-index: 2;
+  padding: 1.5px;
+  background: radial-gradient(
+    calc(var(--spot-size) * 0.8) calc(var(--spot-size) * 0.8) at var(--spot-x) var(--spot-y),
+    hsl(var(--spot-hue) 97% 80% / 1),
+    transparent 65%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight::before,
+  .spotlight::after {
+    display: none;
+  }
+}

@@ -6,7 +6,7 @@ import { Lightbox } from '../Lightbox';
 import type { Effect } from '@/lib/schema';
 
 const effect = {
-  slug: 'ink-swing', title: 'Ink Swing', status: 'published' as const,
+  slug: 'ink-swing', title: 'Ink Swing', status: 'published' as const, tier: 'featured' as const,
   video: 'ink-swing.mp4', poster: 'ink-swing-poster.jpg', width: 1280, height: 584, order: 2,
 };
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import type { Effect } from '@/lib/schema';
+import { useSpotlight } from './useSpotlight';
 
 /**
  * Milliseconds of sustained hover before the preview loads. Without this, sweeping
@@ -31,6 +32,7 @@ export function EffectTile({
   priority?: boolean;
 }) {
   const reduced = useReducedMotion();
+  const spotlight = useSpotlight();
   const [previewing, setPreviewing] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -66,7 +68,13 @@ export function EffectTile({
       onFocus={arm}
       onBlur={disarm}
       onTouchStart={onIntent}
-      className="group relative block w-full overflow-hidden rounded-xl border border-white/10
+      // Spotlight handlers live here rather than on `document`: they only fire while
+      // the pointer is actually over this tile, so however many tiles are on screen,
+      // at most one is doing any work.
+      onPointerEnter={spotlight.onPointerEnter}
+      onPointerMove={spotlight.onPointerMove}
+      onPointerLeave={spotlight.onPointerLeave}
+      className="spotlight group relative block w-full overflow-hidden rounded-xl border border-white/10
                  outline-none ring-offset-2 ring-offset-[#050507] focus-visible:ring-2 focus-visible:ring-white/70"
     >
       {/* Grid tiles share one aspect ratio so the grid reads evenly, even
@@ -111,7 +119,10 @@ export function EffectTile({
           burned-in "Made by Doyun Lee" credit in its lower-left corner, and a bottom
           overlay covered it — the one piece of text on these tiles that must stay
           readable is the author's own attribution. */}
-      <span className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/85 to-transparent p-4 text-left">
+      {/* z-10 keeps the title above the spotlight's ::before wash (z-1) and ::after
+          border light (z-2). Without it the glow washes over the one piece of text
+          that has to stay legible. */}
+      <span className="absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/85 to-transparent p-4 text-left">
         <span className="block text-sm font-semibold">{effect.title}</span>
       </span>
     </button>
