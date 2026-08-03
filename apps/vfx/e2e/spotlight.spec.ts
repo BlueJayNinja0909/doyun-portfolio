@@ -23,6 +23,9 @@ test.describe('tile spotlight', () => {
   test('tracks the cursor within the hovered tile', async ({ page }) => {
     await page.goto('/');
     const tile = page.getByRole('button').first();
+    // The reel now sits below the intro, so the tile must be scrolled into view before
+    // its box is in viewport coordinates the mouse can actually reach.
+    await tile.scrollIntoViewIfNeeded();
     const box = (await tile.boundingBox())!;
 
     await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.3, { steps: 8 });
@@ -46,6 +49,9 @@ test.describe('tile spotlight', () => {
   test('fades out when the cursor leaves', async ({ page }) => {
     await page.goto('/');
     const tile = page.getByRole('button').first();
+    // The reel now sits below the intro, so the tile must be scrolled into view before
+    // its box is in viewport coordinates the mouse can actually reach.
+    await tile.scrollIntoViewIfNeeded();
     const box = (await tile.boundingBox())!;
 
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
@@ -61,6 +67,7 @@ test.describe('tile spotlight', () => {
     await page.goto('/');
     const first = page.getByRole('button').first();
     const second = page.getByRole('button').nth(1);
+    await first.scrollIntoViewIfNeeded();
     const box = (await first.boundingBox())!;
 
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
@@ -90,6 +97,9 @@ test.describe('tile spotlight', () => {
     // and showing the effect is the only job these tiles have.
     await page.goto('/');
     const tile = page.getByRole('button').first();
+    // The reel now sits below the intro, so the tile must be scrolled into view before
+    // its box is in viewport coordinates the mouse can actually reach.
+    await tile.scrollIntoViewIfNeeded();
     const box = (await tile.boundingBox())!;
 
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
@@ -116,6 +126,9 @@ test.describe('tile spotlight', () => {
   test('nothing is painted over the media while a clip plays', async ({ page }) => {
     await page.goto('/');
     const tile = page.getByRole('button').first();
+    // The reel now sits below the intro, so the tile must be scrolled into view before
+    // its box is in viewport coordinates the mouse can actually reach.
+    await tile.scrollIntoViewIfNeeded();
     const box = (await tile.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
     await page.waitForTimeout(1200);
@@ -135,6 +148,9 @@ test.describe('tile spotlight', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     const tile = page.getByRole('button').first();
+    // The reel now sits below the intro, so the tile must be scrolled into view before
+    // its box is in viewport coordinates the mouse can actually reach.
+    await tile.scrollIntoViewIfNeeded();
     const box = (await tile.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
     await page.waitForTimeout(300);

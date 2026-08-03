@@ -128,3 +128,22 @@ body {
     display: none;
   }
 }
+
+/*
+ * Scroll-linked 3D tilt for the reel panel.
+ *
+ * The transform values are always applied by Motion; this media query neutralises them
+ * for anyone who asked for reduced motion. Doing it here rather than branching in the
+ * component is deliberate — `useReducedMotion()` resolves differently on the server
+ * than on the client, so a JS branch renders one tree during SSR and another at
+ * hydration, and React replaces those nodes. A media query is evaluated by the browser
+ * and never disagrees with itself.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-perspective {
+    perspective: none;
+  }
+  .scroll-panel {
+    transform: none !important;
+  }
+}

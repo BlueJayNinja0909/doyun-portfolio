@@ -36,13 +36,24 @@ test('hovering a tile fetches only the small preview, never the full clip', asyn
   });
   await page.goto('/');
 
-  const tiles = page.getByRole('button');
-  await tiles.first().hover();
-  // The preview is armed behind a short hover-intent delay so that sweeping
-  // across the grid doesn't fire a request per tile.
-  await page.waitForTimeout(500);
+  const tile = page.getByRole('button').first();
+  // The reel sits below the intro now, so the tile must be scrolled into view and
+  // settled before hovering — otherwise the hover lands mid-scroll and the pointer
+  // leaves again before the intent delay elapses.
+  await tile.scrollIntoViewIfNeeded();
+  await expect(tile).toBeVisible();
+  await tile.hover();
 
-  expect(videoRequests.length).toBeGreaterThan(0);
+  // Poll rather than sleeping a fixed 500ms. The preview is armed behind a 150ms
+  // hover-intent delay and then has to actually be requested; a fixed window is a race
+  // on a slow run, which is exactly how this test flaked roughly one run in eight.
+  await expect
+    .poll(() => videoRequests.length, {
+      message: 'hovering never triggered a preview request',
+      timeout: 5000,
+    })
+    .toBeGreaterThan(0);
+
   for (const url of videoRequests) {
     expect(url, `hover pulled a non-preview video: ${url}`).toMatch(/-preview\.mp4$/);
   }
@@ -112,7 +123,10 @@ test('clicking a tile opens the lightbox and loads that clip', async ({ page }) 
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute('aria-modal', 'true');
-  await expect(page.locator('video')).toHaveCount(1);
+  // Scoped to the dialog, not the whole page. Playwright hovers before it clicks, which
+  // can arm a tile's hover preview — so a page-wide count intermittently sees two videos
+  // (the preview and the lightbox) and fails for a reason unrelated to what is tested.
+  await expect(dialog.locator('video')).toHaveCount(1);
 
   // The clip should now be requested — and browsers fetch <video> via
   // range requests (206 Partial Content), not a plain 200, since the
