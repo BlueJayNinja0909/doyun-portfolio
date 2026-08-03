@@ -74,56 +74,66 @@ export function EffectTile({
       onPointerEnter={spotlight.onPointerEnter}
       onPointerMove={spotlight.onPointerMove}
       onPointerLeave={spotlight.onPointerLeave}
-      className="spotlight group relative block w-full overflow-hidden rounded-xl border border-white/10
-                 outline-none ring-offset-2 ring-offset-[#050507] focus-visible:ring-2 focus-visible:ring-white/70"
+      // `data-previewing` drives the CSS that suppresses the interior wash while a
+      // clip is playing — a coloured film over the footage is exactly what makes an
+      // effect harder to read, which is the one thing these tiles exist to show.
+      data-previewing={previewing ? '' : undefined}
+      className="spotlight group relative block w-full rounded-xl border border-white/10 p-3
+                 text-left outline-none ring-offset-2 ring-offset-[#050507]
+                 focus-visible:ring-2 focus-visible:ring-white/70"
     >
-      {/* Grid tiles share one aspect ratio so the grid reads evenly, even
-          though clips don't all share the same intrinsic dimensions (e.g.
-          ink-swing is 1280x584, the rest are 1280x638). object-cover crops
-          the poster to fit; width/height still come from the schema so the
-          browser reserves the right intrinsic box for this image request. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`/videos/${effect.poster}`}
-        alt={effect.title}
-        width={effect.width}
-        height={effect.height}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchPriority={priority ? 'high' : undefined}
-        decoding="async"
-        className="aspect-[1280/638] w-full object-cover transition-transform duration-500
-                   will-change-transform group-hover:scale-[1.03] motion-reduce:transition-none
-                   motion-reduce:group-hover:scale-100"
-      />
-
-      {/* The preview element only exists while hovering, so nothing video-related is
-          requested on page load. It is a separate ~90-170KB 480p encode, not the
-          full clip — the full-quality version stays behind the click. Sits over the
-          poster at the same aspect ratio, so swapping it in causes no layout shift. */}
-      {previewing && (
-        <video
-          src={`/videos/${effect.slug}-preview.mp4`}
-          poster={`/videos/${effect.poster}`}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          tabIndex={-1}
-          className="absolute inset-0 aspect-[1280/638] h-full w-full object-cover"
+      {/* Media is inset inside the card rather than bleeding to its edges. That gives
+          the border light something to sit on without touching the footage, and keeps
+          the burned-in "Made by Doyun Lee" credit in each clip's lower-left clear of
+          the card edge. */}
+      <span className="relative block overflow-hidden rounded-lg">
+        {/* Grid tiles share one aspect ratio so the grid reads evenly, even
+            though clips don't all share the same intrinsic dimensions (e.g.
+            ink-swing is 1280x584, the rest are 1280x638). object-cover crops
+            the poster to fit; width/height still come from the schema so the
+            browser reserves the right intrinsic box for this image request. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/videos/${effect.poster}`}
+          alt={effect.title}
+          width={effect.width}
+          height={effect.height}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
+          decoding="async"
+          className="aspect-[1280/638] w-full object-cover transition-transform duration-500
+                     will-change-transform group-hover:scale-[1.03] motion-reduce:transition-none
+                     motion-reduce:group-hover:scale-100"
         />
-      )}
 
-      {/* The title sits at the TOP of the tile, not the bottom. Every clip carries a
-          burned-in "Made by Doyun Lee" credit in its lower-left corner, and a bottom
-          overlay covered it — the one piece of text on these tiles that must stay
-          readable is the author's own attribution. */}
-      {/* z-10 keeps the title above the spotlight's ::before wash (z-1) and ::after
-          border light (z-2). Without it the glow washes over the one piece of text
-          that has to stay legible. */}
-      <span className="absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/85 to-transparent p-4 text-left">
-        <span className="block text-sm font-semibold">{effect.title}</span>
+        {/* The preview element only exists while hovering, so nothing video-related is
+            requested on page load. It is a separate ~90-170KB 480p encode, not the
+            full clip — the full-quality version stays behind the click. Sits over the
+            poster at the same aspect ratio, so swapping it in causes no layout shift. */}
+        {previewing && (
+          <video
+            src={`/videos/${effect.slug}-preview.mp4`}
+            poster={`/videos/${effect.poster}`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+      </span>
+
+      {/* Title sits below the media now rather than overlaying it. Nothing is drawn on
+          top of the footage at all, so neither the effect nor the credit burned into
+          it is ever obscured. z-10 keeps it above the spotlight layers. */}
+      <span className="relative z-10 mt-3 flex items-baseline justify-between gap-3 px-1 pb-0.5">
+        <span className="text-sm font-semibold">{effect.title}</span>
+        <span className="text-[10px] uppercase tracking-[0.14em] text-white/50">
+          {effect.tier === 'featured' ? 'Selected' : 'Study'}
+        </span>
       </span>
     </button>
   );

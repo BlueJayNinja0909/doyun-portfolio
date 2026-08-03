@@ -79,9 +79,9 @@ body {
   border-radius: inherit;
 }
 
-/* Interior wash — sits over the poster, under the title. */
+/* Interior wash. z-0 keeps it behind the inset media rather than over it. */
 .spotlight::before {
-  z-index: 1;
+  z-index: 0;
   background: radial-gradient(
     var(--spot-size) var(--spot-size) at var(--spot-x) var(--spot-y),
     hsl(var(--spot-hue) 95% 72% / 0.34),
@@ -90,8 +90,19 @@ body {
 }
 
 /*
- * Border light. Masking to the padding box leaves only the 1px border lit, which is
- * what reads as a rim rather than a second wash.
+ * While a clip is playing, the wash goes away entirely.
+ *
+ * A coloured film over footage is precisely what makes an effect harder to judge, and
+ * showing the effect is the only job these tiles have. The border light stays — it sits
+ * on the card edge, outside the inset media, so it never touches the footage.
+ */
+.spotlight[data-previewing]::before {
+  opacity: 0;
+}
+
+/*
+ * Border light. Masking to the padding box leaves only the border lit, which is what
+ * reads as a rim rather than a second wash.
  */
 .spotlight::after {
   z-index: 2;

@@ -73,12 +73,62 @@ test.describe('tile spotlight', () => {
   test('the title stays above the glow', async ({ page }) => {
     await page.goto('/');
     const z = await page.evaluate(() => {
-      const label = document.querySelector('button span') as HTMLElement;
-      return getComputedStyle(label).zIndex;
+      // The title row is the element containing the effect name — not the first span,
+      // which is the media wrapper.
+      const row = [...document.querySelectorAll('button > span')].find((s) =>
+        s.textContent?.includes('Arrow Rain'),
+      ) as HTMLElement;
+      return getComputedStyle(row).zIndex;
     });
-    // The wash is z-1 and the border light z-2; the title must clear both or the
-    // effect washes over the one piece of text that has to stay legible.
+    // The border light is z-2; the title must clear it or the effect washes over the
+    // one piece of text that has to stay legible.
     expect(Number(z)).toBeGreaterThan(2);
+  });
+
+  test('the wash is removed while a clip is playing', async ({ page }) => {
+    // A coloured film over footage is exactly what makes an effect harder to judge,
+    // and showing the effect is the only job these tiles have.
+    await page.goto('/');
+    const tile = page.getByRole('button').first();
+    const box = (await tile.boundingBox())!;
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
+    // Long enough for the 150ms hover-intent delay to arm the preview.
+    await page.waitForTimeout(1200);
+
+    expect(
+      await tile.evaluate((el) => el.hasAttribute('data-previewing')),
+      'the preview never started, so this test proves nothing',
+    ).toBe(true);
+
+    expect(
+      await tile.evaluate((el) => getComputedStyle(el, '::before').opacity),
+      'the interior wash is still drawn over a playing clip',
+    ).toBe('0');
+
+    // The border light sits on the card edge, outside the inset media, so it stays.
+    expect(
+      await tile.evaluate((el) => getComputedStyle(el, '::after').opacity),
+      'the border light was removed along with the wash',
+    ).toBe('1');
+  });
+
+  test('nothing is painted over the media while a clip plays', async ({ page }) => {
+    await page.goto('/');
+    const tile = page.getByRole('button').first();
+    const box = (await tile.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
+    await page.waitForTimeout(1200);
+
+    // The video's own box must be the topmost thing at its centre — no overlay,
+    // gradient or title strip sitting on the footage.
+    const tag = await page.evaluate(() => {
+      const v = document.querySelector('video')!;
+      const r = v.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return hit?.tagName.toLowerCase();
+    });
+    expect(tag, 'something is layered over the playing clip').toBe('video');
   });
 
   test('is suppressed entirely under reduced motion', async ({ page }) => {
