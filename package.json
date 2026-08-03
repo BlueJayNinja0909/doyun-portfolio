@@ -9,6 +9,7 @@
     "dev:vfx": "npm run dev -w @doyun/vfx",
     "build:vfx": "npm run build -w @doyun/vfx",
     "test": "vitest run",
+    "test:e2e": "npm run build:vfx && playwright test --config apps/vfx/playwright.config.ts",
     "process:vfx": "node scripts/process-vfx.mjs"
   },
   "devDependencies": {

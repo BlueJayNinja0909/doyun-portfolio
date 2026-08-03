@@ -4,7 +4,15 @@ import path from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
-  test: { environment: 'jsdom', globals: true, setupFiles: ['./vitest.setup.ts'] },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./vitest.setup.ts'],
+    // e2e/ holds Playwright specs (*.spec.ts), which vitest's default
+    // include glob would otherwise also try to collect and run as unit
+    // tests, failing immediately since they use Playwright's test API.
+    exclude: ['**/node_modules/**', '**/e2e/**'],
+  },
   resolve: {
     alias: { '@': path.resolve(__dirname, '.') },
     // apps/vfx and the repo root each resolve their own nested copy of
