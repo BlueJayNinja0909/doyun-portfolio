@@ -22,6 +22,35 @@ const PREVIEW_SECONDS = 5;
 /** Seconds of run-up before the saturation peak, so the effect builds on screen. */
 const PREVIEW_LEAD = 1.5;
 
+/**
+ * Output budgets. Fixed quality settings produce wildly different sizes depending on
+ * how busy a clip is — a dense particle effect can land 3x over a calm one at the same
+ * CRF. Rather than hand-tuning per clip, anything over budget is re-encoded a step
+ * lower until it fits or the attempts run out.
+ */
+const CLIP_MAX_KB = 3500;
+const PREVIEW_MAX_KB = 250;
+const POSTER_MAX_KB = 100;
+const MAX_QUALITY_STEPS = 3;
+
+const kbOf = (p) => Math.round(fs.statSync(p).size / 1024);
+
+/**
+ * Encodes with `build(quality)`, stepping quality down until the result fits `maxKb`.
+ * Returns the quality actually used so it can be reported honestly rather than assumed.
+ */
+function encodeWithinBudget(dest, maxKb, startQuality, step, build) {
+  let quality = startQuality;
+  for (let attempt = 0; attempt <= MAX_QUALITY_STEPS; attempt++) {
+    ff(build(quality));
+    if (kbOf(dest) <= maxKb || attempt === MAX_QUALITY_STEPS) {
+      return { quality, kb: kbOf(dest), overBudget: kbOf(dest) > maxKb };
+    }
+    quality += step;
+  }
+  return { quality, kb: kbOf(dest), overBudget: true };
+}
+
 /** Sheets larger than this are re-encoded; the textures page loads all of them at once. */
 const TEXTURE_MAX_KB = 150;
 /** libwebp quality for oversized sheets. High enough that sprite edges stay crisp. */
@@ -51,10 +80,13 @@ for (const clip of clips) {
   const input = path.join(SRC, clip.src);
   const vf = `crop=${clip.crop},scale=1280:-2:flags=lanczos`;
 
-  ff(['-i', input, '-an', '-vf', vf,
-      '-c:v', 'libx264', '-profile:v', 'high', '-crf', '26', '-preset', 'slow',
-      '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
-      path.join(OUT_V, `${clip.slug}.mp4`)]);
+  const clipPath = path.join(OUT_V, `${clip.slug}.mp4`);
+  const clipResult = encodeWithinBudget(clipPath, CLIP_MAX_KB, 26, 4, (crf) => [
+    '-i', input, '-an', '-vf', vf,
+    '-c:v', 'libx264', '-profile:v', 'high', '-crf', String(crf), '-preset', 'slow',
+    '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+    clipPath,
+  ]);
 
   // Peak saturation finds the right frame for most effects, but it fails when the
   // effect itself is desaturated (grey smoke) or sits against a bright skybox that
@@ -62,8 +94,10 @@ for (const clip of clips) {
   // panel. `posterAt` in clips.json overrides it with a hand-picked timestamp for
   // those clips, chosen off a contact sheet rather than guessed.
   const t = clip.posterAt !== undefined ? clip.posterAt : peakSaturationTime(input);
-  ff(['-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', '5',
-      path.join(OUT_V, `${clip.slug}-poster.jpg`)]);
+  const posterPath = path.join(OUT_V, `${clip.slug}-poster.jpg`);
+  const posterResult = encodeWithinBudget(posterPath, POSTER_MAX_KB, 5, 2, (q) => [
+    '-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', String(q), posterPath,
+  ]);
 
   // Hover preview: a short, small loop that starts at the effect's peak so the
   // interesting part plays immediately. Sized to load fast enough that hovering
@@ -71,17 +105,20 @@ for (const clip of clips) {
   // PREVIEW_LEAD seconds before the peak gives the effect a moment of run-up
   // rather than cutting in at the brightest frame.
   const previewStart = Math.max(0, t - PREVIEW_LEAD);
-  ff(['-ss', String(previewStart), '-t', String(PREVIEW_SECONDS), '-i', input, '-an',
-      '-vf', `crop=${clip.crop},scale=640:-2:flags=lanczos`,
-      '-c:v', 'libx264', '-profile:v', 'main', '-crf', '32', '-preset', 'slow',
-      '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
-      path.join(OUT_V, `${clip.slug}-preview.mp4`)]);
+  const previewPath = path.join(OUT_V, `${clip.slug}-preview.mp4`);
+  const previewResult = encodeWithinBudget(previewPath, PREVIEW_MAX_KB, 32, 4, (crf) => [
+    '-ss', String(previewStart), '-t', String(PREVIEW_SECONDS), '-i', input, '-an',
+    '-vf', `crop=${clip.crop},scale=640:-2:flags=lanczos`,
+    '-c:v', 'libx264', '-profile:v', 'main', '-crf', String(crf), '-preset', 'slow',
+    '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+    previewPath,
+  ]);
 
-  const kb = (f) => Math.round(fs.statSync(path.join(OUT_V, f)).size / 1024);
+  const note = (r, startQ) => (r.overBudget ? ' OVER' : r.quality !== startQ ? `@${r.quality}` : '');
   console.log(
-    `${clip.slug}: clip ${kb(`${clip.slug}.mp4`)}KB, ` +
-    `poster ${kb(`${clip.slug}-poster.jpg`)}KB, ` +
-    `preview ${kb(`${clip.slug}-preview.mp4`)}KB (peak ${t}s)`,
+    `${clip.slug}: clip ${clipResult.kb}KB${note(clipResult, 26)}, ` +
+    `poster ${posterResult.kb}KB${note(posterResult, 5)}, ` +
+    `preview ${previewResult.kb}KB${note(previewResult, 32)} (peak ${t}s)`,
   );
 }
 

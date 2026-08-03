@@ -65,5 +65,20 @@
     "src": "Wind and smoke practice.mp4",
     "crop": "1752:874:0:142",
     "posterAt": 0.67
+  },
+  {
+    "slug": "beam-clash",
+    "src": "beam clash effect.mp4",
+    "crop": "1918:874:0:142"
+  },
+  {
+    "slug": "flower-summon",
+    "src": "Flower Summon vrfx.mp4",
+    "crop": "1752:874:0:142"
+  },
+  {
+    "slug": "water-showcase",
+    "src": "Water vfx showcase.mp4",
+    "crop": "1752:874:0:142"
   }
 ]
