@@ -41,8 +41,8 @@ export function Flipbook({ texture, src }: { texture: Texture; src: string }) {
           .anim-${id}:hover,
           .anim-${id}:focus-visible {
             animation:
-              sprite-x-${id} ${rowDuration}s steps(${spriteStepsX(grid)}) infinite,
-              sprite-y-${id} ${totalDuration}s steps(${spriteStepsY(grid)}) infinite;
+              sprite-x-${id} ${rowDuration}s steps(${spriteStepsX(grid)}, jump-none) infinite,
+              sprite-y-${id} ${totalDuration}s steps(${spriteStepsY(grid)}, jump-none) infinite;
           }
         }
         @keyframes sprite-x-${id} { to { background-position-x: 100%; } }
