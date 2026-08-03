@@ -28,10 +28,27 @@ const PREVIEW_LEAD = 1.5;
  * CRF. Rather than hand-tuning per clip, anything over budget is re-encoded a step
  * lower until it fits or the attempts run out.
  */
-const CLIP_MAX_KB = 3500;
-const PREVIEW_MAX_KB = 250;
-const POSTER_MAX_KB = 100;
+const CLIP_MAX_KB = 9000;
+const PREVIEW_MAX_KB = 400;
+const POSTER_MAX_KB = 130;
 const MAX_QUALITY_STEPS = 3;
+
+/**
+ * Starting quality per asset role. These differ because the roles have different
+ * constraints, not because one matters more:
+ *
+ *  - Full clips stream. The browser sends range requests and starts playing long
+ *    before the file finishes, so a 6MB clip and a 2MB clip begin at roughly the same
+ *    moment. Quality here costs bandwidth, not perceived speed — so it runs high.
+ *  - Previews cannot usefully stream. They are 5s and need most of the file before
+ *    they play smoothly, and that has to land inside the ~400ms a cursor rests on a
+ *    tile before the hover feels broken. This is the one place where bytes really are
+ *    latency, so it stays modest.
+ *  - Posters block first paint on the reel, so they stay small.
+ */
+const CLIP_CRF = 21;
+const PREVIEW_CRF = 29;
+const POSTER_Q = 3;
 
 const kbOf = (p) => Math.round(fs.statSync(p).size / 1024);
 
@@ -81,7 +98,7 @@ for (const clip of clips) {
   const vf = `crop=${clip.crop},scale=1280:-2:flags=lanczos`;
 
   const clipPath = path.join(OUT_V, `${clip.slug}.mp4`);
-  const clipResult = encodeWithinBudget(clipPath, CLIP_MAX_KB, 26, 4, (crf) => [
+  const clipResult = encodeWithinBudget(clipPath, CLIP_MAX_KB, CLIP_CRF, 3, (crf) => [
     '-i', input, '-an', '-vf', vf,
     '-c:v', 'libx264', '-profile:v', 'high', '-crf', String(crf), '-preset', 'slow',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
@@ -95,7 +112,7 @@ for (const clip of clips) {
   // those clips, chosen off a contact sheet rather than guessed.
   const t = clip.posterAt !== undefined ? clip.posterAt : peakSaturationTime(input);
   const posterPath = path.join(OUT_V, `${clip.slug}-poster.jpg`);
-  const posterResult = encodeWithinBudget(posterPath, POSTER_MAX_KB, 5, 2, (q) => [
+  const posterResult = encodeWithinBudget(posterPath, POSTER_MAX_KB, POSTER_Q, 2, (q) => [
     '-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', String(q), posterPath,
   ]);
 
@@ -106,9 +123,9 @@ for (const clip of clips) {
   // rather than cutting in at the brightest frame.
   const previewStart = Math.max(0, t - PREVIEW_LEAD);
   const previewPath = path.join(OUT_V, `${clip.slug}-preview.mp4`);
-  const previewResult = encodeWithinBudget(previewPath, PREVIEW_MAX_KB, 32, 4, (crf) => [
+  const previewResult = encodeWithinBudget(previewPath, PREVIEW_MAX_KB, PREVIEW_CRF, 3, (crf) => [
     '-ss', String(previewStart), '-t', String(PREVIEW_SECONDS), '-i', input, '-an',
-    '-vf', `crop=${clip.crop},scale=640:-2:flags=lanczos`,
+    '-vf', `crop=${clip.crop},scale=854:-2:flags=lanczos`,
     '-c:v', 'libx264', '-profile:v', 'main', '-crf', String(crf), '-preset', 'slow',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
     previewPath,
@@ -116,9 +133,9 @@ for (const clip of clips) {
 
   const note = (r, startQ) => (r.overBudget ? ' OVER' : r.quality !== startQ ? `@${r.quality}` : '');
   console.log(
-    `${clip.slug}: clip ${clipResult.kb}KB${note(clipResult, 26)}, ` +
-    `poster ${posterResult.kb}KB${note(posterResult, 5)}, ` +
-    `preview ${previewResult.kb}KB${note(previewResult, 32)} (peak ${t}s)`,
+    `${clip.slug}: clip ${clipResult.kb}KB${note(clipResult, CLIP_CRF)}, ` +
+    `poster ${posterResult.kb}KB${note(posterResult, POSTER_Q)}, ` +
+    `preview ${previewResult.kb}KB${note(previewResult, PREVIEW_CRF)} (peak ${t}s)`,
   );
 }
 
