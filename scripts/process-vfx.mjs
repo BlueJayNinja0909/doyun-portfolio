@@ -5,6 +5,7 @@ import matter from 'gray-matter';
 
 const BIN = 'C:\\Users\\doyun\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin';
 const FF = path.join(BIN, 'ffmpeg.exe');
+const FP = path.join(BIN, 'ffprobe.exe');
 const ROOT = process.cwd();
 const SRC = path.join(ROOT, '_inbox/vfx/VFX Showcase');
 const TEX_SRC = path.join(ROOT, '_inbox/vfx/Textures');
@@ -198,9 +199,60 @@ for (const clip of clips) {
   // those clips, chosen off a contact sheet rather than guessed.
   const t = clip.posterAt !== undefined ? clip.posterAt : peakSaturationTime(input);
   const posterPath = path.join(OUT_V, `${clip.slug}-poster.jpg`);
-  const posterResult = encodeWithinBudget(posterPath, POSTER_MAX_KB, POSTER_Q, 2, (q) => [
-    '-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', String(q), posterPath,
-  ]);
+
+  /**
+   * `posterImage` replaces the extracted frame with a still from disk.
+   *
+   * A recording is a compromise: it is encoded for motion, so any single frame out
+   * of it carries compression artefacts and whatever the camera happened to be
+   * doing. A screenshot taken in Studio is a clean render of the same effect, and
+   * for the one image that represents a clip in the grid that is worth more than
+   * consistency with the video.
+   *
+   * The still is centre-cropped to the clip's own aspect rather than stretched.
+   * The tile reserves its box from the frontmatter dimensions, which come from the
+   * video, so a still of a different shape would either distort or letterbox. The
+   * crop is computed from the real file rather than assumed, because a screenshot
+   * is whatever shape the window was.
+   */
+  let posterResult;
+  if (clip.posterImage) {
+    const stillSrc = path.join(ROOT, '_inbox/vfx', clip.posterImage);
+    if (!fs.existsSync(stillSrc)) {
+      throw new Error(
+        `clips.json: ${clip.slug} sets posterImage "${clip.posterImage}", but ` +
+          `_inbox/vfx/${clip.posterImage} does not exist.`,
+      );
+    }
+    const [srcW, srcH] = execFileSync(
+      FP,
+      ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height',
+       '-of', 'csv=p=0', stillSrc],
+      { encoding: 'utf8' },
+    ).trim().split(',').map(Number);
+
+    const [cropW, cropH] = clip.crop.split(':').map(Number);
+    const aspect = cropW / cropH;
+    // Keep whichever dimension is the binding one, then take the middle.
+    const outW = Math.min(srcW, Math.round(srcH * aspect));
+    const outH = Math.min(srcH, Math.round(srcW / aspect));
+    const offX = Math.round((srcW - outW) / 2);
+    const offY = Math.round((srcH - outH) / 2);
+
+    posterResult = encodeWithinBudget(posterPath, POSTER_MAX_KB, POSTER_Q, 2, (q) => [
+      '-i', stillSrc, '-frames:v', '1',
+      '-vf', `crop=${outW}:${outH}:${offX}:${offY},scale=${POSTER_WIDTH}:-2:flags=lanczos`,
+      '-q:v', String(q), posterPath,
+    ]);
+    console.log(
+      `  ${clip.slug} poster from still: ${srcW}x${srcH} -> crop ${outW}x${outH} ` +
+      `at ${offX},${offY} (${clip.posterImage})`,
+    );
+  } else {
+    posterResult = encodeWithinBudget(posterPath, POSTER_MAX_KB, POSTER_Q, 2, (q) => [
+      '-ss', String(t), '-i', input, '-frames:v', '1', '-vf', vf, '-q:v', String(q), posterPath,
+    ]);
+  }
 
   // Hover preview: a short, small loop that starts at the effect's peak so the
   // interesting part plays immediately. Sized to load fast enough that hovering

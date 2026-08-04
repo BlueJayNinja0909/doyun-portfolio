@@ -12,7 +12,8 @@
   {
     "slug": "fire-slash",
     "src": "Much better fire slash showcase.mp4",
-    "crop": "1520:874:280:142"
+    "crop": "1520:874:280:142",
+    "posterImage": "Textures/Screenshot_2026-06-20_215401.webp"
   },
   {
     "slug": "starstruck",
