@@ -197,6 +197,22 @@ export function GradientShimmer({
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
+    /**
+     * Room for descenders, cancelled out again so nothing moves.
+     *
+     * `background-clip: text` paints the background only inside this element's box
+     * and then clips it to the glyph outlines. Anything the glyph draws outside the
+     * box has no background to be clipped from, so it simply does not appear. A tight
+     * line-height makes that box shorter than the font's own line box, and the tails
+     * of y, g, p and q fall through the bottom of it: on the wordmark at 72px with
+     * leading 1.02 the box is 73.4px and the y was visibly sliced off.
+     *
+     * Padding extends the paintable box downward; the matching negative margin takes
+     * the same space back out of layout, so this fixes the clipping without shifting
+     * anything below it. In em so it scales with whatever size it is used at.
+     */
+    paddingBottom: '0.2em',
+    marginBottom: '-0.2em',
     ['--gs-base' as string]: baseColor,
     ['--gs-spread' as string]: `${seedSpread}px`,
     ['--gs-spread-mid' as string]: `${seedSpread * SPREAD_MID_RATIO}px`,

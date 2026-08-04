@@ -41,7 +41,7 @@ export default function Page() {
               exclamation included. */}
           <p className="mt-6 max-w-md text-[15px] leading-relaxed text-white/75">
             Hi! I&apos;m a high school VFX artist from San Diego. I make combat skills
-            and simpler effects that really elevate a game, and this site is a
+            and simple effects that really elevate a game, and this site is a
             collection of my best work.
           </p>
 

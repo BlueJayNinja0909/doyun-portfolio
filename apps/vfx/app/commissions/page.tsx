@@ -1,3 +1,5 @@
+import { SocialLinks } from '@/components/SocialLinks';
+
 export default function Page() {
   return (
     <main className="mx-auto min-h-dvh max-w-3xl px-6 pb-24">
@@ -31,30 +33,7 @@ export default function Page() {
             commission actually starts, and these are for looking someone up. */}
         <div className="mt-6 border-t border-white/10 pt-5">
           <h3 className="text-xs uppercase tracking-[0.16em] text-white/60">Elsewhere</h3>
-          <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            {[
-              // Tracking parameters stripped from the Instagram link Doyun sent. The
-              // original carried `igsh`, a share token tied to the QR that produced it,
-              // plus utm_source=qr. Neither is needed to reach the profile and a share
-              // token is not something to publish on a page anyone can read.
-              ['Instagram', 'https://www.instagram.com/ddoyunlee_'],
-              ['LinkedIn', 'https://www.linkedin.com/in/doyun-lee-83b108390/'],
-            ].map(([label, href]) => (
-              <li key={label}>
-                <a
-                  href={href}
-                  target="_blank"
-                  // noreferrer alongside noopener: the first is the security one, the
-                  // second stops the destination seeing where the click came from.
-                  rel="noopener noreferrer"
-                  className="text-white/75 underline-offset-4 hover:text-white hover:underline
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                >
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <SocialLinks />
         </div>
       </section>
     </main>
