@@ -1,6 +1,5 @@
 import { loadEffects } from '@/lib/content';
 import { ReelGrid } from '@/components/ReelGrid';
-import { Avatar } from '@/components/Avatar';
 import { GradientShimmer } from '@/components/GradientShimmer';
 import { ContainerScroll } from '@/components/ContainerScroll';
 import { ScrollToWork } from '@/components/ScrollToWork';
@@ -13,8 +12,11 @@ export default function Page() {
   return (
     <main>
       {/* ---------------------------------------------------------------- intro */}
-      <section className="mx-auto flex min-h-[86vh] max-w-6xl flex-col items-center gap-8 px-6 pb-16 pt-6 md:flex-row md:gap-12 md:pt-0">
-        <div className="order-2 w-full md:order-1 md:flex-1">
+      {/* Single column, left-aligned, capped at a readable measure. Letting the text run
+          the full 6xl width would give a line length that is tiring to read; the
+          constellation field carries the empty right-hand space instead. */}
+      <section className="mx-auto flex min-h-[80vh] max-w-6xl flex-col justify-center px-6 pb-16 pt-20">
+        <div className="w-full max-w-2xl">
           <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">
             Roblox visual effects
           </p>
@@ -52,11 +54,6 @@ export default function Page() {
             </a>
           </div>
         </div>
-
-        {/* The rig loads only when it approaches the viewport, and not at all under
-            reduced motion — see Avatar.tsx. The box is reserved either way, so the
-            text never shifts when the scene swaps in. */}
-        <Avatar className="order-1 h-[300px] w-full shrink-0 text-white sm:h-[380px] md:order-2 md:h-[460px] md:flex-1" />
       </section>
 
       {/* ----------------------------------------------------------------- work */}
@@ -77,9 +74,9 @@ export default function Page() {
             </>
           }
         >
-          {/* No priorityFirst: the reel now sits below the fold, so eagerly fetching its
-              first poster at high priority competes with the avatar, which is the real
-              LCP element. Two high-priority images is worse than one. */}
+          {/* No priorityFirst: the reel sits below the fold behind the intro, so its
+              first poster is not the LCP element and eagerly fetching it at high
+              priority would only compete with above-the-fold work. */}
           <ReelGrid effects={featured} />
         </ContainerScroll>
 
