@@ -148,7 +148,15 @@ test('nav links have real contrast against their background', async ({ page }) =
 
 test('the ambient backdrop contributes visible, non-flat pixels', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto('/');
+  // Sampled on /textures/ rather than /.
+  //
+  // The home page's hero now runs full bleed to the top edge with the nav floating
+  // over it, so the top band there is the clip and its veil, not the backdrop. That
+  // is the intended design, and it made this test fail for a reason unrelated to what
+  // it checks. The bug it exists to catch is an opaque body background hiding
+  // .ambient, which is layout-wide, so any route where the backdrop is actually the
+  // backdrop proves it just as well.
+  await page.goto('/textures/');
   await page.waitForLoadState('networkidle');
 
   const buffer = await page.screenshot();

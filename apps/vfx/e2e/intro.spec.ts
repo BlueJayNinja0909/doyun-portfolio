@@ -66,11 +66,29 @@ test.describe('intro page', () => {
     await page.waitForTimeout(2000);
     expect(bytes, 'hero clip missing').toBeGreaterThan(0);
     expect(bytes / 1024, 'the hero clip has grown past its budget').toBeLessThan(7000);
-    // A floor as well as a ceiling. The failure that produced this test was not the clip
-    // getting too big, it was the budget loop silently stepping quality down to fit and
-    // shipping something unwatchable. A hero that suddenly comes in tiny means that
-    // happened again, so it should fail rather than look like a win.
-    expect(bytes / 1024, 'the hero is suspiciously small, quality was likely degraded').toBeGreaterThan(4000);
+
+    // The quality floor is a bitrate, not a size.
+    //
+    // It was a size, and that was wrong: it encoded an assumption about how long the
+    // hero is. Swapping the hero to a shorter clip took the file from 6.0MB to 1.5MB
+    // with no loss of quality at all, and a 4000KB floor called that a failure. What
+    // the floor is actually guarding is the failure that created it, where the budget
+    // loop silently stepped quality down and shipped something unwatchable at 544kbps.
+    // Bitrate measures that directly and does not care about duration.
+    const bitrateMbps = await page.evaluate(async () => {
+      const v = document.querySelector<HTMLVideoElement>('[data-testid="hero-clip"]');
+      if (!v) return null;
+      if (!Number.isFinite(v.duration) || v.duration === 0) {
+        await new Promise((r) => v.addEventListener('loadedmetadata', r, { once: true }));
+      }
+      return v.duration;
+    }).then((duration) => (duration ? (bytes * 8) / duration / 1e6 : null));
+
+    expect(bitrateMbps, 'could not read the hero duration').not.toBeNull();
+    expect(
+      bitrateMbps!,
+      `hero is only ${bitrateMbps?.toFixed(1)}Mbps, quality was likely degraded`,
+    ).toBeGreaterThan(2);
   });
 
   test('the reel is reachable from the intro', async ({ page }) => {

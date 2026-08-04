@@ -177,7 +177,16 @@ export function Intro({
         />
         <div
           ref={gradientRef}
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050507] via-[#050507]/85 to-transparent"
+          // Explicit stops rather than the default even spread.
+          //
+          // `via-85% to-transparent` spread the darkening across the full width, which
+          // suited beam clash because that effect filled the frame edge to edge and had
+          // brightness to spare on the right. The spin clip is composed around a single
+          // centred vortex, so the same ramp buried the subject and left a hero that
+          // looked like an empty sky. This holds full strength over the left 22% where
+          // the wordmark actually sits, eases through the paragraph, and is gone by 66%
+          // so the effect is visible in the half of the frame that has no text on it.
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#050507_0%,#050507_22%,rgba(5,5,7,0.72)_42%,transparent_66%)]"
           style={{ opacity: 1 }}
           aria-hidden="true"
         />

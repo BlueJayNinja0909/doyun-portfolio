@@ -1,4 +1,4 @@
-import { loadEffects } from '@/lib/content';
+import { loadEffects, loadTextures } from '@/lib/content';
 import { ReelGrid } from '@/components/ReelGrid';
 import { GradientShimmer } from '@/components/GradientShimmer';
 import { ContainerScroll } from '@/components/ContainerScroll';
@@ -9,6 +9,7 @@ import { ScrollCue } from '@/components/ScrollCue';
 
 export default function Page() {
   const effects = loadEffects();
+  const textures = loadTextures();
   const featured = effects.filter((e) => e.tier === 'featured');
   const practice = effects.filter((e) => e.tier === 'practice');
 
@@ -48,8 +49,11 @@ export default function Page() {
               verifiable further down the page. */}
           <dl className="mt-7 flex flex-wrap gap-x-9 gap-y-3">
             {[
-              ['16', 'effects'],
-              ['19', 'texture sheets'],
+              // Counted, not typed. These were hardcoded and had already gone stale:
+              // the reel said 16 effects while 18 were published. A number that claims
+              // to be verifiable further down the page has to actually agree with it.
+              [String(effects.length), 'effects'],
+              [String(textures.length), 'texture sheets'],
               ['Open', 'for commissions'],
             ].map(([value, label]) => (
               <div key={label}>

@@ -25,7 +25,18 @@ const ff = (args) => execFileSync(FF, ['-v', 'error', '-y', ...args], { stdio: '
  * visit. Wider than a preview so it does not look soft stretched across a desktop, and
  * more compressed because most of its detail is hidden under the overlay anyway.
  */
-const HERO_SECONDS = 3.6;
+/**
+ * 2.4s, down from 3.6.
+ *
+ * Sized to the clip rather than chosen as a round number. Every frame of the spin
+ * clip was scored at 5fps for warm bright coverage, and every 3.6s window in it
+ * contains a stretch where the effect has dissipated to empty sky: the best one
+ * still drops to 0.2% coverage at its weakest frame. 2.4s from heroAt is the
+ * longest span that stays alive the whole way through, weakest frame 6.2%. A
+ * shorter loop that never goes empty reads better than a longer one that does,
+ * and it costs fewer bytes.
+ */
+const HERO_SECONDS = 2.4;
 /**
  * The hero crop is 1400x700, so 1400 is the ceiling: anything wider upscales and costs
  * bytes for no detail (measured at 1600 and 1920, both pure waste). This now sits at that
