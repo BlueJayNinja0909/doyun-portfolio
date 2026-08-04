@@ -82,7 +82,7 @@ const PREVIEW_LEAD = 1.5;
 // sizing this from a `-t 5` sample of the start understates it by enough to make the
 // budget bind. That mistake set this to 1800 on the first pass and beam-clash promptly
 // stepped down to CRF 27.
-const CLIP_MAX_KB = 12000; // worst measured: beam-clash 10041KB at CRF 21
+const CLIP_MAX_KB = 24000; // worst measured: beam-clash 19265KB at native 1918x874, CRF 21
 const PREVIEW_MAX_KB = 2400; // worst measured: beam-clash 1953KB at CRF 24, from 5.0s
 const POSTER_MAX_KB = 250; // worst measured: beam-clash 182KB at q3
 const MAX_QUALITY_STEPS = 3;
@@ -105,6 +105,8 @@ const MAX_QUALITY_STEPS = 3;
 const CLIP_CRF = 21;
 const PREVIEW_CRF = 24;
 const POSTER_Q = 3;
+/** Reel thumbnails render around 320px wide; 1280 is already generous. */
+const POSTER_WIDTH = 1280;
 
 const kbOf = (p) => Math.round(fs.statSync(p).size / 1024);
 
@@ -163,11 +165,27 @@ const clips = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/clips.json'), 
 
 for (const clip of clips) {
   const input = path.join(SRC, clip.src);
-  const vf = `crop=${clip.crop},scale=1280:-2:flags=lanczos`;
+
+  /**
+   * Full clips are not scaled at all: they keep every pixel the crop contains.
+   *
+   * They used to be scaled to 1280 from crops between 1520 and 1918 wide, which
+   * threw away up to a third of the horizontal resolution the recording actually
+   * has. That is the one view someone uses to judge the work, and on a display
+   * larger than 1280 the browser was upscaling a downscale. Nothing here can
+   * exceed the source, but there is no reason to ship below it either.
+   */
+  const clipVf = `crop=${clip.crop}`;
+  /**
+   * Posters do not follow. They are reel thumbnails roughly 320px wide on screen,
+   * so 1280 is already four times their display size, and every one of them loads
+   * on the same page.
+   */
+  const vf = `crop=${clip.crop},scale=${POSTER_WIDTH}:-2:flags=lanczos`;
 
   const clipPath = path.join(OUT_V, `${clip.slug}.mp4`);
   const clipResult = encodeWithinBudget(clipPath, CLIP_MAX_KB, CLIP_CRF, 3, (crf) => [
-    '-i', input, '-an', '-vf', vf,
+    '-i', input, '-an', '-vf', clipVf,
     '-c:v', 'libx264', '-profile:v', 'high', '-crf', String(crf), '-preset', 'slow',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
     clipPath,
