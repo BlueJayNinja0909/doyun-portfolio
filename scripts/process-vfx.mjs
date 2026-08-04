@@ -26,9 +26,27 @@ const ff = (args) => execFileSync(FF, ['-v', 'error', '-y', ...args], { stdio: '
  * more compressed because most of its detail is hidden under the overlay anyway.
  */
 const HERO_SECONDS = 3.6;
-const HERO_WIDTH = 960;
-const HERO_CRF = 36;
-const HERO_MAX_KB = 260;
+/**
+ * The hero crop is 1400x700, so 1400 is the ceiling: anything wider upscales and costs
+ * bytes for no detail (measured at 1600 and 1920, both pure waste). 1280 sits just under
+ * native, which is sharp full bleed on a desktop without paying for pixels that are not
+ * in the source.
+ */
+const HERO_WIDTH = 1280;
+const HERO_CRF = 30;
+/**
+ * A genuine ceiling, not a quality knob.
+ *
+ * This was 260KB, which this footage cannot hit at any watchable quality: dense particles
+ * over a bright sky are close to the worst case for H.264, and CRF 36 alone lands at
+ * 828KB. The budget loop below did exactly what it was told and stepped the hero down to
+ * CRF 45 to fit, which looked terrible. Set with headroom over the ~2.6MB that CRF 30
+ * actually produces, so the loop only engages if a future clip is wildly more expensive
+ * rather than quietly gutting every hero to hit a number.
+ */
+const HERO_MAX_KB = 3000;
+/** The hero poster is the LCP element, so it is worth more than a tile thumbnail. */
+const HERO_POSTER_Q = 4;
 
 /** Hover-preview shape. Short enough to loop without feeling repetitive. */
 const PREVIEW_SECONDS = 5;
@@ -80,6 +98,18 @@ function encodeWithinBudget(dest, maxKb, startQuality, step, build) {
   }
   return { quality, kb: kbOf(dest), overBudget: true };
 }
+
+/**
+ * Reports what an encode actually settled on.
+ *
+ * Lives at module scope so every caller uses it, including the hero. The hero previously
+ * logged only its size, so a clip that had been stepped from CRF 36 down to 45 printed
+ * "hero: 241KB" and read as a success. Size alone cannot tell you whether a budget was
+ * met by encoding well or by destroying the picture, so quality is always shown when it
+ * moved.
+ */
+const note = (r, startQ) =>
+  r.overBudget ? ` OVER BUDGET at q${r.quality}` : r.quality !== startQ ? ` DEGRADED to q${r.quality}` : '';
 
 /** Sheets larger than this are re-encoded; the textures page loads all of them at once. */
 const TEXTURE_MAX_KB = 150;
@@ -167,12 +197,15 @@ for (const clip of clips) {
         // `heroCrop` overrides the tile crop for the hero only. The tile crop keeps the
       // whole Studio viewport, which is fine at thumbnail size but puts floating
       // plugin panels and the command bar on screen when it fills the page.
-      '-vf', `crop=${clip.heroCrop ?? clip.crop},scale=${HERO_WIDTH}:-2:flags=lanczos`, '-q:v', '6',
+      '-vf', `crop=${clip.heroCrop ?? clip.crop},scale=${HERO_WIDTH}:-2:flags=lanczos`,
+        '-q:v', String(HERO_POSTER_Q),
         path.join(OUT_V, 'hero-poster.jpg')]);
-    console.log(`  hero: ${heroResult.kb}KB from ${clip.slug} at ${heroStart.toFixed(1)}s`);
+    console.log(
+      `  hero: ${heroResult.kb}KB${note(heroResult, HERO_CRF)} from ${clip.slug} ` +
+      `at ${heroStart.toFixed(1)}s, ${HERO_WIDTH}px q${heroResult.quality}`,
+    );
   }
 
-  const note = (r, startQ) => (r.overBudget ? ' OVER' : r.quality !== startQ ? `@${r.quality}` : '');
   console.log(
     `${clip.slug}: clip ${clipResult.kb}KB${note(clipResult, CLIP_CRF)}, ` +
     `poster ${posterResult.kb}KB${note(posterResult, POSTER_Q)}, ` +
