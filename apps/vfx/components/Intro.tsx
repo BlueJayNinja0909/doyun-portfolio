@@ -64,37 +64,63 @@ export function Intro({ children, cue }: { children: ReactNode; cue: ReactNode }
   useEffect(() => setMounted(true), []);
   const playClip = mounted && !reduced;
 
-  // Progress across the section's own scroll runway: 0 when its top meets the top of
-  // the viewport, 1 when its bottom does.
+  // Progress across the pin, 0 when the section's top meets the top of the viewport and
+  // 1 at the moment the sticky child is released.
+  //
+  // The end offset must be 'end end', not 'end start'. 'end start' does not reach 1 until
+  // the section's bottom edge has travelled all the way to the top of the viewport, which
+  // on a 190vh section is 820px after the sticky child already let go. The sequence was
+  // therefore only ever playing to progress 0.47 before the hero scrolled away: the clip
+  // crept from scale 0.88 to 0.985 instead of reaching 1.06, and the veil stopped at 0.26
+  // instead of lifting to 0.10. Everything below is tuned against a runway that now
+  // actually finishes on screen.
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ['start start', 'end start'],
+    offset: ['start start', 'end end'],
   });
 
   // The clip opens as a contained panel and expands to fill. Scale rather than width
   // or inset so the whole move stays on the compositor.
-  const clipScale = useTransform(scrollYProgress, [0, 0.75], [0.88, 1.06]);
-  const clipRadius = useTransform(scrollYProgress, [0, 0.55], [26, 0]);
+  const clipScale = useTransform(scrollYProgress, [0, 0.8], [0.88, 1.06]);
+  const clipRadius = useTransform(scrollYProgress, [0, 0.5], [26, 0]);
   // Overlay lifts as you scroll, so the effect is dimmest where the text sits over it
   // and clearest once the text has gone. Kept light: the left-hand gradient below is
   // what actually protects the text, so a heavy flat wash here only buries the effect
   // the hero exists to show.
-  const veil = useTransform(scrollYProgress, [0, 0.8], [0.42, 0.12]);
+  const veil = useTransform(scrollYProgress, [0, 0.75], [0.42, 0.1]);
+  // The text-protection gradient has to lift too, and this is the one that was missed.
+  // It was a plain div with no binding at all, so it stayed fully opaque for the entire
+  // sequence and kept the left third of the frame black long after the wordmark it was
+  // protecting had faded out. It now clears just after the text does.
+  const gradient = useTransform(scrollYProgress, [0.12, 0.45], [1, 0]);
   // Wordmark rises and fades well before the section ends, handing off to the reel.
-  const textY = useTransform(scrollYProgress, [0, 0.6], [0, -120]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.42], [1, 0]);
-  const cueOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
+  const textY = useTransform(scrollYProgress, [0, 0.55], [0, -140]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.38], [1, 0]);
+  const cueOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
+  // The last beat: once the clip is full bleed there is nothing left for it to do, so it
+  // dissolves into the page background and the reel rises through it. Without this the
+  // hero simply stops existing at the pin release, which reads as a hard cut between two
+  // stacked pages rather than one continuous move.
+  const heroFade = useTransform(scrollYProgress, [0.86, 1], [1, 0]);
 
   const still = reduced ? undefined : true;
   const animate = !reduced;
 
   const veilRef = useOpacityFrom(veil, animate);
+  const gradientRef = useOpacityFrom(gradient, animate);
   const textRef = useOpacityFrom(textOpacity, animate);
   const cueRef = useOpacityFrom(cueOpacity, animate);
+  const stageRef = useOpacityFrom(heroFade, animate);
 
   return (
-    <section ref={ref} className="relative h-[190vh]" data-testid="intro">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+    // 220vh gives the pin a 120vh runway. At 190vh the whole sequence had to resolve in
+    // 90vh, which is under a screen and a half of scrolling and felt hurried once the
+    // animation actually played to completion rather than stopping halfway.
+    <section ref={ref} className="relative h-[220vh]" data-testid="intro">
+      <div
+        ref={stageRef}
+        className="sticky top-0 flex h-screen items-center overflow-hidden"
+      >
         {/* Clip layer */}
         <motion.div
           className="absolute inset-3 overflow-hidden md:inset-6"
@@ -139,7 +165,9 @@ export function Intro({ children, cue }: { children: ReactNode; cue: ReactNode }
           aria-hidden="true"
         />
         <div
+          ref={gradientRef}
           className="pointer-events-none absolute inset-3 bg-gradient-to-r from-[#050507] via-[#050507]/85 to-transparent md:inset-6"
+          style={{ opacity: 1 }}
           aria-hidden="true"
         />
 

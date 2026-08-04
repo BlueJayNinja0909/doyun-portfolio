@@ -116,6 +116,57 @@ test.describe('intro page', () => {
     await expect(page.locator('h1')).toBeVisible();
   });
 
+  // The sequence used to stop at 47% and nothing noticed, because every test here
+  // checked that things *start* animating rather than that they *finish*. `useScroll`
+  // was offset 'end start', which does not reach progress 1 until the section's bottom
+  // edge reaches the top of the viewport, a full 100vh after the sticky child has
+  // already been released. The clip crept to scale 0.985 instead of 1.06 and the hero
+  // scrolled away still boxed with rounded corners. These two assert the end state at
+  // the exact moment the pin lets go, which is the last frame anyone actually sees.
+  test('the hero sequence completes before the pin releases', async ({ page }) => {
+    await page.goto('/');
+    const release = await page.evaluate(() => {
+      const s = document.querySelector('[data-testid="intro"]') as HTMLElement;
+      return s.offsetHeight - window.innerHeight;
+    });
+    await page.evaluate((y) => window.scrollTo(0, y), release);
+    await page.waitForTimeout(700);
+
+    const end = await page.evaluate(() => {
+      const stage = document.querySelector('[data-testid="intro"] .sticky')!;
+      const layers = [...stage.children] as HTMLElement[];
+      const gradientEl = layers.find((el) =>
+        getComputedStyle(el).backgroundImage.includes('gradient'),
+      );
+      return {
+        scale: new DOMMatrix(getComputedStyle(layers[0]).transform).a,
+        gradient: gradientEl ? Number(getComputedStyle(gradientEl).opacity) : null,
+      };
+    });
+
+    // Designed to reach 1.06. Anything near 0.98 means the runway is mismapped again.
+    expect(end.scale, 'the clip never reached full bleed before the hero scrolled away').toBeGreaterThan(1.04);
+    // This layer exists only to keep the wordmark legible over the footage. The wordmark
+    // is long gone by now, so leaving it up just blacks out a third of the effect, which
+    // is exactly what it did for the entire life of the original implementation.
+    expect(end.gradient, 'the text-protection gradient never lifted').toBeLessThan(0.05);
+  });
+
+  test('the reel arrives as the hero releases, with no empty screen between', async ({ page }) => {
+    await page.goto('/');
+    const gap = await page.evaluate(() => {
+      const intro = document.querySelector('[data-testid="intro"]') as HTMLElement;
+      const work = document.getElementById('work')!;
+      const release = intro.offsetHeight - window.innerHeight;
+      const workTop = work.getBoundingClientRect().top + window.scrollY;
+      return workTop - release;
+    });
+    // A pinned section leaves a trailing block the height of its sticky child. Left in,
+    // it reads as a full blank screen between the hero and the reel. The negative margin
+    // on #work cancels it, so the reel should begin essentially where the pin ends.
+    expect(gap, `there is a ${Math.round(gap)}px dead zone after the hero`).toBeLessThan(200);
+  });
+
   test('no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/');

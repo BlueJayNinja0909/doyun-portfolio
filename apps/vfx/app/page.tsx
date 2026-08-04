@@ -76,7 +76,19 @@ export default function Page() {
           rotateX projects its corners wider than its own box, which pushed a 320px
           viewport 52px sideways. `clip` rather than `hidden` so this never becomes a
           scroll container and never traps sticky positioning inside it. */}
-      <section id="work" className="scroll-mt-8 overflow-x-clip pb-24">
+      {/* -100vh is exact, not tuned by eye.
+
+          A pinned section of height H leaves a trailing block equal to its sticky child's
+          height once that child is released: the child stops sticking at (H - 100vh) but
+          the section keeps occupying layout until H. That last 100vh is dead space the
+          hero has already faded out of, and it read as a full empty screen between the
+          two sections. Pulling this section up by exactly the child's height puts the
+          reel's first frame precisely where the pin lets go, and the value holds for any
+          H, so changing the intro's length above does not require retuning it here.
+
+          `relative z-10` puts this above the intro's sticky child, so the reel rises
+          through the dissolving hero rather than sliding behind it. */}
+      <section id="work" className="relative z-10 -mt-[100vh] scroll-mt-8 overflow-x-clip pb-24">
         <ContainerScroll
           title={
             <>
