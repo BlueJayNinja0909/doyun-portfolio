@@ -28,10 +28,22 @@ const HEAD_NODE = 'Player8';
  */
 const HEAD_ATTACHED = new Set(['Handle5', 'Handle1', 'Handle6']);
 
-const MAX_YAW = 0.6;
+/** Neck range. The head cannot exceed this relative to the torso, however far the
+ *  turntable has carried the body round — which is what keeps the look-at anatomical
+ *  instead of the head spinning to face backwards. */
+const MAX_YAW = 0.62;
 const MAX_PITCH = 0.3;
-const TORSO_FOLLOW = 0.22;
 const EASE = 0.11;
+/** Turntable speed in radians per second. One rotation takes about 40s. */
+const SPIN_SPEED = 0.157;
+
+/** Shortest signed angle from a to b, wrapped to [-PI, PI]. */
+function shortestAngle(a: number, b: number) {
+  let d = (b - a) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return d;
+}
 
 function useAvatarGltf() {
   const [scene, setScene] = useState<THREE.Group | null>(null);
@@ -70,7 +82,37 @@ function Rig({ pointer }: { pointer: React.RefObject<{ x: number; y: number }> }
   const bodyRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Group>(null);
   const current = useRef({ yaw: 0, pitch: 0 });
-  const { invalidate } = useThree();
+  const spin = useRef(0);
+  const active = useRef(true);
+  const { invalidate, gl } = useThree();
+
+  // Stop the turntable when the canvas is off screen or the tab is hidden. A loop that
+  // renders forever is the one thing about this feature that could genuinely hurt
+  // someone's battery.
+  useEffect(() => {
+    const el = gl.domElement;
+    const wake = () => {
+      active.current = true;
+      invalidate();
+    };
+    const sleep = () => {
+      active.current = false;
+    };
+
+    const io = new IntersectionObserver(
+      ([e]) => (e.isIntersecting && !document.hidden ? wake() : sleep()),
+      { threshold: 0 },
+    );
+    io.observe(el);
+
+    const onVisibility = () => (document.hidden ? sleep() : wake());
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [gl, invalidate]);
 
   // Split the loaded scene into a head group and everything else, so the head can be
   // rotated about the neck rather than the model's origin.
@@ -103,10 +145,12 @@ function Rig({ pointer }: { pointer: React.RefObject<{ x: number; y: number }> }
       (child.name === HEAD_NODE || HEAD_ATTACHED.has(child.name) ? headParts : bodyParts).push(child);
     }
 
-    // Pivot at the base of the head, not its centre — a head rotating about its middle
-    // reads as a floating ball rather than a neck turning.
-    const headBox = new THREE.Box3();
-    for (const p of headParts) headBox.expandByObject(p);
+    // Pivot from the HEAD PART ALONE, not the head plus its accessories. The hat is
+    // 2.79 studs wide against a 1.13 head and sits asymmetrically, so including it
+    // dragged the pivot off the neck — the head then swung around a point beside its
+    // own base and visibly detached from the shoulders.
+    const headMesh = headParts.find((p) => p.name === HEAD_NODE) ?? headParts[0];
+    const headBox = new THREE.Box3().setFromObject(headMesh);
     const pivot = new THREE.Vector3(
       (headBox.min.x + headBox.max.x) / 2,
       headBox.min.y,
@@ -137,23 +181,37 @@ function Rig({ pointer }: { pointer: React.RefObject<{ x: number; y: number }> }
     return { head, body, headPivot, scale };
   }, [scene]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!split || !headRef.current || !bodyRef.current) return;
 
-    const targetYaw = THREE.MathUtils.clamp(pointer.current.x * MAX_YAW * 1.5, -MAX_YAW, MAX_YAW);
-    const targetPitch = THREE.MathUtils.clamp(pointer.current.y * MAX_PITCH * 1.5, -MAX_PITCH, MAX_PITCH);
+    // Turntable. Clamped delta so a backgrounded tab returning does not jump the
+    // rotation forward by however many seconds it was away.
+    spin.current += Math.min(delta, 0.05) * SPIN_SPEED;
+    bodyRef.current.rotation.y = spin.current;
+
+    // Where the head would need to point, in the figure's own space, to face the
+    // cursor. The body's rotation is subtracted so the head keeps looking at the
+    // viewer as the turntable carries the torso away from them.
+    const desiredWorldYaw = pointer.current.x * MAX_YAW * 1.5;
+    const relative = shortestAngle(spin.current, desiredWorldYaw);
+
+    const targetYaw = THREE.MathUtils.clamp(relative, -MAX_YAW, MAX_YAW);
+    const targetPitch = THREE.MathUtils.clamp(
+      pointer.current.y * MAX_PITCH * 1.5,
+      -MAX_PITCH,
+      MAX_PITCH,
+    );
 
     current.current.yaw += (targetYaw - current.current.yaw) * EASE;
     current.current.pitch += (targetPitch - current.current.pitch) * EASE;
 
     headRef.current.rotation.y = current.current.yaw;
     headRef.current.rotation.x = current.current.pitch;
-    bodyRef.current.rotation.y = current.current.yaw * TORSO_FOLLOW;
 
-    const settled =
-      Math.abs(targetYaw - current.current.yaw) < 0.0008 &&
-      Math.abs(targetPitch - current.current.pitch) < 0.0008;
-    if (!settled) invalidate();
+    // The turntable never settles, so this drives the next frame itself. Gating it on
+    // `active` is what stops the loop when the hero scrolls away or the tab is hidden —
+    // without it a continuously spinning canvas would burn a core in a background tab.
+    if (active.current) invalidate();
   });
 
   useEffect(() => {

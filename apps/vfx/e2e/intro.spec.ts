@@ -56,6 +56,67 @@ test.describe('intro page', () => {
     expect(right, 'the avatar did not respond to a cursor move').not.toBe(left);
   });
 
+  test('the 3D avatar loads on a wide viewport and turns its head', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/');
+
+    const canvas = page.locator('[data-testid="avatar-3d"] canvas');
+    await expect(canvas).toBeAttached({ timeout: 20_000 });
+
+    const drew = await canvas.evaluate((el: HTMLCanvasElement) => el.width > 0 && el.height > 0);
+    expect(drew, 'the 3D canvas has no drawing surface').toBe(true);
+  });
+
+  test('the 3D mesh never reaches a narrow viewport', async ({ page }) => {
+    // three.js, the Draco decoder and the 371KB mesh are together heavier than the rest
+    // of the page. A phone gets the 48KB flat render of the same avatar instead.
+    await page.setViewportSize({ width: 420, height: 800 });
+    const heavy: string[] = [];
+    page.on('request', (r) => {
+      const u = r.url();
+      if (/\.glb$|draco/.test(u)) heavy.push(u);
+    });
+
+    await page.goto('/');
+    await page.waitForTimeout(2500);
+
+    expect(heavy, 'the 3D payload was fetched on a narrow viewport').toEqual([]);
+    await expect(page.locator('[data-testid="avatar"] img')).toBeVisible();
+  });
+
+  test('the 3D payload is skipped under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const heavy: string[] = [];
+    page.on('request', (r) => {
+      if (/\.glb$|draco/.test(r.url())) heavy.push(r.url());
+    });
+
+    await page.goto('/');
+    await page.waitForTimeout(2500);
+
+    // A continuously spinning figure is exactly what someone asking for reduced motion
+    // is trying to avoid, so there is no reason to download it.
+    expect(heavy, 'the spinning 3D avatar loaded despite prefers-reduced-motion').toEqual([]);
+    await expect(page.locator('[data-testid="avatar"] img')).toBeVisible();
+  });
+
+  test('the Draco decoder is self-hosted, not fetched from a CDN', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const offsite: string[] = [];
+    page.on('request', (r) => {
+      const u = r.url();
+      if (/draco/i.test(u) && !u.startsWith('http://127.0.0.1') && !u.startsWith('http://localhost')) {
+        offsite.push(u);
+      }
+    });
+    await page.goto('/');
+    await page.waitForTimeout(4000);
+    // three.js defaults DRACOLoader to a Google-hosted decoder. A hero element should
+    // not depend on a third party staying up.
+    expect(offsite, 'the Draco decoder came from an external host').toEqual([]);
+  });
+
   test('the avatar is served locally, not hot-linked from Roblox', async ({ page }) => {
     // Hot-linking would put a hero image on a CDN outside this site's control, and
     // Roblox thumbnail URLs are regenerated periodically — the link would rot.

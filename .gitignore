@@ -4,3 +4,4 @@ node_modules/
 assets/vfx/compare/
 test-results/
 playwright-report/
+.avatar-work/
