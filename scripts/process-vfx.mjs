@@ -54,31 +54,44 @@ const PREVIEW_SECONDS = 5;
 const PREVIEW_LEAD = 1.5;
 
 /**
- * Output budgets. Fixed quality settings produce wildly different sizes depending on
- * how busy a clip is — a dense particle effect can land 3x over a calm one at the same
- * CRF. Rather than hand-tuning per clip, anything over budget is re-encoded a step
- * lower until it fits or the attempts run out.
+ * Output budgets. Fixed quality settings produce wildly different sizes depending on how
+ * busy a clip is: a dense particle effect can land 3x over a calm one at the same CRF.
+ * Rather than hand-tuning per clip, anything over budget is re-encoded a step lower until
+ * it fits or the attempts run out.
+ *
+ * Each of these sits above the measured worst case across all 16 clips, so in normal
+ * operation the loop never engages. That is deliberate. A budget tight enough to bind
+ * regularly is not a safety net, it is an invisible quality setting, which is exactly how
+ * the hero came to ship at CRF 45. These are ceilings that catch a pathological clip, and
+ * when one binds the log says DEGRADED so it gets looked at.
  */
-const CLIP_MAX_KB = 9000;
-const PREVIEW_MAX_KB = 400;
-const POSTER_MAX_KB = 130;
+// Worst cases below are measured at each asset's real window, not the head of the file.
+// Previews are cut from the saturation peak, which is busier than the opening seconds, so
+// sizing this from a `-t 5` sample of the start understates it by enough to make the
+// budget bind. That mistake set this to 1800 on the first pass and beam-clash promptly
+// stepped down to CRF 27.
+const CLIP_MAX_KB = 12000; // worst measured: beam-clash 10041KB at CRF 21
+const PREVIEW_MAX_KB = 2400; // worst measured: beam-clash 1953KB at CRF 24, from 5.0s
+const POSTER_MAX_KB = 250; // worst measured: beam-clash 182KB at q3
 const MAX_QUALITY_STEPS = 3;
 
 /**
  * Starting quality per asset role. These differ because the roles have different
  * constraints, not because one matters more:
  *
- *  - Full clips stream. The browser sends range requests and starts playing long
- *    before the file finishes, so a 6MB clip and a 2MB clip begin at roughly the same
- *    moment. Quality here costs bandwidth, not perceived speed — so it runs high.
- *  - Previews cannot usefully stream. They are 5s and need most of the file before
- *    they play smoothly, and that has to land inside the ~400ms a cursor rests on a
- *    tile before the hover feels broken. This is the one place where bytes really are
- *    latency, so it stays modest.
- *  - Posters block first paint on the reel, so they stay small.
+ *  - Full clips stream. The browser sends range requests and starts playing long before
+ *    the file finishes, so a 6MB clip and a 12MB clip begin at roughly the same moment.
+ *    This is also the view someone uses to actually judge the work, so it runs highest.
+ *  - Previews are hover-only, which makes them desktop-only: touch devices have no hover
+ *    and go straight to the lightbox on tap. So they are tuned for a mouse on broadband
+ *    rather than a phone on mobile data. They still want to arrive inside the ~400ms a
+ *    cursor rests on a tile, which is a latency constraint on one viewer rather than a
+ *    bandwidth one, but 5s at 854px leaves plenty of room at CRF 24.
+ *  - Posters are the reel's thumbnails and are lazy-loaded below the fold, so they are
+ *    cheap in practice even at high quality.
  */
 const CLIP_CRF = 21;
-const PREVIEW_CRF = 29;
+const PREVIEW_CRF = 24;
 const POSTER_Q = 3;
 
 const kbOf = (p) => Math.round(fs.statSync(p).size / 1024);
