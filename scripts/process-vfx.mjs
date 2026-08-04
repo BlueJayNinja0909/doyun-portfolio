@@ -28,23 +28,24 @@ const ff = (args) => execFileSync(FF, ['-v', 'error', '-y', ...args], { stdio: '
 const HERO_SECONDS = 3.6;
 /**
  * The hero crop is 1400x700, so 1400 is the ceiling: anything wider upscales and costs
- * bytes for no detail (measured at 1600 and 1920, both pure waste). 1280 sits just under
- * native, which is sharp full bleed on a desktop without paying for pixels that are not
- * in the source.
+ * bytes for no detail (measured at 1600 and 1920, both pure waste). This now sits at that
+ * ceiling rather than just under it, because the hero is the one asset that is displayed
+ * full bleed at whatever size the screen is, so it is the only place where the last few
+ * hundred pixels of source resolution are actually visible.
  */
-const HERO_WIDTH = 1280;
-const HERO_CRF = 30;
+const HERO_WIDTH = 1400;
+const HERO_CRF = 24;
 /**
  * A genuine ceiling, not a quality knob.
  *
  * This was 260KB, which this footage cannot hit at any watchable quality: dense particles
  * over a bright sky are close to the worst case for H.264, and CRF 36 alone lands at
  * 828KB. The budget loop below did exactly what it was told and stepped the hero down to
- * CRF 45 to fit, which looked terrible. Set with headroom over the ~2.6MB that CRF 30
- * actually produces, so the loop only engages if a future clip is wildly more expensive
- * rather than quietly gutting every hero to hit a number.
+ * CRF 45 to fit, which looked terrible. Set with headroom over the ~6.0MB that 1400px at
+ * CRF 24 actually produces, so the loop only engages if a future clip is wildly more
+ * expensive rather than quietly gutting every hero to hit a number.
  */
-const HERO_MAX_KB = 3000;
+const HERO_MAX_KB = 7000;
 /** The hero poster is the LCP element, so it is worth more than a tile thumbnail. */
 const HERO_POSTER_Q = 4;
 

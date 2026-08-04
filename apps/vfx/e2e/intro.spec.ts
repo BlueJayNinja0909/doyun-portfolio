@@ -63,12 +63,12 @@ test.describe('intro page', () => {
     await page.goto('/');
     await page.waitForTimeout(2000);
     expect(bytes, 'hero clip missing').toBeGreaterThan(0);
-    expect(bytes / 1024, 'the hero clip has grown past its budget').toBeLessThan(3000);
+    expect(bytes / 1024, 'the hero clip has grown past its budget').toBeLessThan(7000);
     // A floor as well as a ceiling. The failure that produced this test was not the clip
     // getting too big, it was the budget loop silently stepping quality down to fit and
     // shipping something unwatchable. A hero that suddenly comes in tiny means that
     // happened again, so it should fail rather than look like a win.
-    expect(bytes / 1024, 'the hero is suspiciously small, quality was likely degraded').toBeGreaterThan(1500);
+    expect(bytes / 1024, 'the hero is suspiciously small, quality was likely degraded').toBeGreaterThan(4000);
   });
 
   test('the reel is reachable from the intro', async ({ page }) => {
