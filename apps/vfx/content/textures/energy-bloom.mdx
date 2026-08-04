@@ -1,0 +1,15 @@
+---
+slug: energy-bloom
+title: "Energy Bloom"
+status: published
+source: EnergyThing111.webp
+grid:
+  cols: 5
+  rows: 7
+  frames: 32
+fps: 24
+note: "548x768 on a 5x7 grid, cells 109.6x109.7. Verified by sampling alpha down every gridline: vertical seams peak at 0 and horizontal at 49, so the lines sit in gutters rather than through sprites. frames is 32 because cells 32-34 peak at alpha 4, 2 and 3, which is invisible; it records how many cells carry art and does not shorten playback, since the animation is locked to a full grid cycle to keep both axes in sync. Cell 0 is empty and stays that way on purpose: the top row ramps 0, 52, 119, 233, 255, so starting from nothing is the animation rather than a gap in it."
+---
+
+A knot of energy that swells and collapses. The first cell is deliberately
+empty, since the effect builds out of nothing rather than cutting in.
