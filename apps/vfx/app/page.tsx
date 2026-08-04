@@ -14,10 +14,10 @@ export default function Page() {
   return (
     <main>
       {/* ---------------------------------------------------------------- intro */}
-      <Intro cue={<ScrollCue />}>
+      <Intro id="about" cue={<ScrollCue />}>
         <div className="w-full max-w-2xl">
           <p className="text-[11px] uppercase tracking-[0.2em] text-white/70">
-            Roblox visual effects
+            Roblox VFX artist
           </p>
 
           {/* LCP element. The shimmer is a background sweep on text that is already
@@ -25,13 +25,22 @@ export default function Page() {
               motion it renders as a static gradient rather than not at all. */}
           <h1 className="mt-5 text-[clamp(2.25rem,7.5vw,4.5rem)] font-extrabold leading-[1.02] tracking-[-0.045em]">
             <GradientShimmer duration={2.6} pauseBetween={2600} spread={2.4}>
-              Doyun Lee VFX
+              Doyun Lee
             </GradientShimmer>
           </h1>
 
+          {/* ------------------------------------------------------------------
+              DOYUN: this is your intro. Replace both sentences below.
+
+              Placeholder text, but deliberately written to be true and safe to
+              ship, so that forgetting to change it costs nothing worse than a
+              generic paragraph. Two or three sentences fits the layout; much
+              past that and it collides with the stats row on a short viewport.
+              ------------------------------------------------------------------ */}
           <p className="mt-6 max-w-md text-[15px] leading-relaxed text-white/75">
-            I build particles, trails and impact effects in Roblox Studio, and the
-            texture sheets underneath them.
+            I am a high school senior in San Diego who builds visual effects in Roblox
+            Studio. Mostly particles, trails and impact work, along with the texture
+            sheets underneath them.
           </p>
 
           {/* A short count carries more weight than an adjective, and it is all
@@ -92,11 +101,14 @@ export default function Page() {
         <ContainerScroll
           title={
             <>
+              {/* This heading is the other half of the nav's two buttons: the top of the
+                  page is Doyun, this is the work. The wordmark no longer carries "VFX",
+                  so it has to be unambiguous here. */}
               <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">
                 Selected work
               </p>
               <h2 className="mt-3 text-[clamp(1.75rem,5vw,3rem)] font-extrabold tracking-[-0.04em]">
-                The reel
+                VFX
               </h2>
             </>
           }

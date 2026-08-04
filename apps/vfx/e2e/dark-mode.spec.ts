@@ -74,22 +74,52 @@ async function contrastRatio(page: Page, selector: string): Promise<number> {
       });
       return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
     }
+    type RGBA = { r: number; g: number; b: number; a: number };
+    /** Source-over: what `src` looks like painted on `dst`. */
+    const over = (src: RGBA, dst: RGBA): RGBA => ({
+      r: src.a * src.r + (1 - src.a) * dst.r,
+      g: src.a * src.g + (1 - src.a) * dst.g,
+      b: src.a * src.b + (1 - src.a) * dst.b,
+      a: 1,
+    });
+
     const el = document.querySelector(sel);
     if (!el) throw new Error(`selector not found: ${sel}`);
     const textColor = parseColor(getComputedStyle(el).color);
     if (!textColor) throw new Error('could not parse text color');
+
+    // Composite the whole background stack rather than stopping at the first layer with
+    // any alpha at all.
+    //
+    // The previous version took that first layer and fed its *unpremultiplied* rgb
+    // straight into the luminance maths, discarding the alpha. A translucent white
+    // background therefore measured as pure white: `white/0.06` over near-black scored
+    // as #ffffff, and against `white/0.75` text that produced a contrast ratio of 1.0
+    // for an element that actually renders around 10:1. It went unnoticed because
+    // nothing being tested had a translucent background of its own until the nav pills
+    // gained one, so the walk always reached an opaque ancestor on the first hit.
+    const layers: RGBA[] = [];
     let node: Element | null = el;
-    let bg: { r: number; g: number; b: number; a: number } | null = null;
     while (node) {
       const c = parseColor(getComputedStyle(node).backgroundColor);
       if (c && c.a > 0) {
-        bg = c;
-        break;
+        layers.push(c);
+        if (c.a >= 1) break;
       }
       node = node.parentElement;
     }
-    const bgColor = bg ?? { r: 255, g: 255, b: 255, a: 1 };
-    const L1 = relLum(textColor);
+
+    // Innermost first above, so the last entry is the outermost. An opaque layer ends
+    // the walk and becomes the base; if none was found, the canvas underneath is white.
+    let bgColor: RGBA =
+      layers.length > 0 && layers[layers.length - 1].a >= 1
+        ? layers.pop()!
+        : { r: 255, g: 255, b: 255, a: 1 };
+    // Paint what remains back on, outermost first, to land on what the eye sees.
+    for (let i = layers.length - 1; i >= 0; i--) bgColor = over(layers[i], bgColor);
+
+    // Text alpha matters for the same reason the background's does.
+    const L1 = relLum(over(textColor, bgColor));
     const L2 = relLum(bgColor);
     const lighter = Math.max(L1, L2);
     const darker = Math.min(L1, L2);

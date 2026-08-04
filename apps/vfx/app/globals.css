@@ -178,3 +178,177 @@ body {
     transform: none !important;
   }
 }
+
+/*
+ * Nav pills. Icon collapses to a circle, expands into a labelled gradient button.
+ *
+ * The base state here is the *expanded* one, and the collapse is applied only inside
+ * `@media (hover: hover)`. That order is deliberate. Written the other way round, a
+ * touch device gets four unlabelled coloured circles with no way to reveal what they
+ * are, because the label only exists in a `:hover` rule that will never match. Building
+ * up from the labelled state means the fallback is the accessible one, and the effect is
+ * an enhancement for devices that can actually drive it.
+ */
+.gmenu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.gmenu-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(255 255 255 / 0.75);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  isolation: isolate;
+  transition: color 400ms ease, border-color 400ms ease, width 500ms ease;
+}
+
+/* Gradient fill, and a blurred copy of it glowing underneath. */
+.gmenu-fill,
+.gmenu-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(45deg, var(--from), var(--to));
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.gmenu-fill {
+  z-index: -1;
+}
+
+.gmenu-glow {
+  z-index: -2;
+  filter: blur(15px);
+  transform: translateY(8px);
+}
+
+.gmenu-pill:hover,
+.gmenu-pill:focus-visible {
+  color: #fff;
+  border-color: transparent;
+}
+
+/* focus-visible is listed everywhere hover is, so the keyboard sees the same nav. */
+.gmenu-pill:hover .gmenu-fill,
+.gmenu-pill:focus-visible .gmenu-fill {
+  opacity: 1;
+}
+
+.gmenu-pill:hover .gmenu-glow,
+.gmenu-pill:focus-visible .gmenu-glow {
+  opacity: 0.5;
+}
+
+.gmenu-pill:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.8);
+  outline-offset: 3px;
+}
+
+.gmenu-icon {
+  display: flex;
+  z-index: 1;
+}
+
+.gmenu-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.gmenu-label {
+  z-index: 1;
+}
+
+/*
+ * Hover-capable devices only: collapse to a circle and trade the icon for the label.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .gmenu {
+    gap: 1.25rem;
+  }
+
+  .gmenu-pill {
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    gap: 0;
+  }
+
+  .gmenu-pill:hover,
+  .gmenu-pill:focus-visible {
+    width: 168px;
+  }
+
+  .gmenu-icon {
+    position: absolute;
+    transform: scale(1);
+    transition: transform 500ms ease;
+  }
+
+  .gmenu-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Scaled rather than hidden. `display: none` or `visibility: hidden` would drop it
+     from the accessible name, leaving each link announced as nothing at all. */
+  .gmenu-label {
+    position: absolute;
+    transform: scale(0);
+    transition: transform 500ms ease 150ms;
+  }
+
+  .gmenu-pill:hover .gmenu-icon,
+  .gmenu-pill:focus-visible .gmenu-icon {
+    transform: scale(0);
+    transition-delay: 0ms;
+  }
+
+  .gmenu-pill:hover .gmenu-label,
+  .gmenu-pill:focus-visible .gmenu-label {
+    transform: scale(1);
+  }
+}
+
+/*
+ * Reduced motion keeps the colour change and drops the movement. The pill stays at its
+ * expanded width with the label always readable, rather than animating open, so nothing
+ * here depends on a transition anyone asked not to see.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .gmenu-pill,
+  .gmenu-fill,
+  .gmenu-glow,
+  .gmenu-icon,
+  .gmenu-label {
+    transition: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gmenu-pill {
+      width: auto;
+      height: 44px;
+      padding: 0 1rem;
+      gap: 0.5rem;
+    }
+    .gmenu-icon,
+    .gmenu-label {
+      position: static;
+      transform: none;
+    }
+  }
+}

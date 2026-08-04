@@ -48,7 +48,16 @@ function useOpacityFrom(value: MotionValue<number>, enabled: boolean) {
  * Everything here animates transform and opacity only, and the whole sequence is
  * inert under prefers-reduced-motion, where the clip is replaced by its poster frame.
  */
-export function Intro({ children, cue }: { children: ReactNode; cue: ReactNode }) {
+export function Intro({
+  children,
+  cue,
+  id,
+}: {
+  children: ReactNode;
+  cue: ReactNode;
+  /** Anchor target, so the nav's "Doyun Lee" pill can link back to the top section. */
+  id?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
@@ -116,7 +125,7 @@ export function Intro({ children, cue }: { children: ReactNode; cue: ReactNode }
     // 220vh gives the pin a 120vh runway. At 190vh the whole sequence had to resolve in
     // 90vh, which is under a screen and a half of scrolling and felt hurried once the
     // animation actually played to completion rather than stopping halfway.
-    <section ref={ref} className="relative h-[220vh]" data-testid="intro">
+    <section ref={ref} id={id} className="relative h-[220vh]" data-testid="intro">
       <div
         ref={stageRef}
         className="sticky top-0 flex h-screen items-center overflow-hidden"

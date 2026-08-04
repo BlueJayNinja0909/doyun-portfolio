@@ -25,7 +25,9 @@ test.describe('intro page', () => {
       );
     }
     expect(s.width, 'the wordmark collapsed to nothing').toBeGreaterThan(100);
-    await expect(span).toHaveText('Doyun Lee VFX');
+    // The wordmark is the person, not the discipline. "VFX" now heads the reel section
+    // instead, so the nav's two pills point at two genuinely different things.
+    await expect(span).toHaveText('Doyun Lee');
   });
 
   test('the intro loads its own hero clip and nothing else', async ({ page }) => {

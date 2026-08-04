@@ -24,10 +24,14 @@ for (const path of ROUTES) {
     await gotoReduced(page, path);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     // Nav is shared chrome present (and visible) on every route.
-    // Located by href rather than by its text: the point of this assertion is that
-    // the shared nav stays visible under reduced motion, not what the wordmark
-    // currently says. Matching on the text made a rename look like a motion bug.
-    await expect(page.locator('nav a[href="/"]')).toBeVisible();
+    //
+    // Pinned to neither text nor a specific href. Matching on text made a rename look
+    // like a motion bug; the href it was switched to then broke the same way when the
+    // home link became an anchor. What this assertion is actually about is that the
+    // shared nav still renders under reduced motion, so it checks that and nothing more.
+    const navLinks = page.locator('nav a');
+    await expect(navLinks.first()).toBeVisible();
+    expect(await navLinks.count()).toBeGreaterThan(1);
   });
 }
 
