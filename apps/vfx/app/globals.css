@@ -352,3 +352,91 @@ body {
     }
   }
 }
+
+/*
+ * Liquid-glass button surface.
+ *
+ * Three stacked layers inside one anchor: a refracting backdrop at the bottom, the
+ * rim-light shadows above it, and the label on top. The shadow stack is the
+ * snippet's dark-theme values unchanged; this site has no light mode, so the
+ * light-theme half it shipped alongside is dropped rather than carried dead.
+ */
+.liquid-glass {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.7rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  transition: transform 300ms ease;
+}
+
+/*
+ * Radius is 9999px on every layer.
+ *
+ * The snippet puts `rounded-full` on the shadow layer and `rounded-md` on the
+ * refraction layer of the same button, so the rim light traces a pill while the
+ * glass it is supposed to be the edge of is a rounded rectangle. They have to
+ * agree or the highlight visibly floats off the shape.
+ */
+.liquid-glass-rim,
+.liquid-glass-refract {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.liquid-glass-rim {
+  z-index: 0;
+  box-shadow:
+    0 0 8px rgba(0, 0, 0, 0.03),
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 3px 3px 0.5px -3.5px rgba(255, 255, 255, 0.09),
+    inset -3px -3px 0.5px -3.5px rgba(255, 255, 255, 0.85),
+    inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.6),
+    inset -1px -1px 1px -0.5px rgba(255, 255, 255, 0.6),
+    inset 0 0 6px 6px rgba(255, 255, 255, 0.12),
+    inset 0 0 2px 2px rgba(255, 255, 255, 0.06),
+    0 0 12px rgba(0, 0, 0, 0.15);
+}
+
+/*
+ * This is the fallback, not the effect. The SVG displacement is applied as an
+ * inline style on the element instead; see LiquidGlass.tsx for why.
+ *
+ * A frosted blur is what shows anywhere the displacement does not resolve, which
+ * is a weaker version of the same idea rather than a broken button.
+ */
+.liquid-glass-refract {
+  z-index: -1;
+  overflow: hidden;
+  backdrop-filter: blur(6px) saturate(1.4);
+  -webkit-backdrop-filter: blur(6px) saturate(1.4);
+}
+
+.liquid-glass-label {
+  position: relative;
+  z-index: 1;
+}
+
+.liquid-glass:hover {
+  transform: scale(1.04);
+}
+
+.liquid-glass:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.8);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass {
+    transition: none;
+  }
+  .liquid-glass:hover {
+    transform: none;
+  }
+}

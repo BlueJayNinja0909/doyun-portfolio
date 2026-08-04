@@ -3,6 +3,7 @@ import { ReelGrid } from '@/components/ReelGrid';
 import { GradientShimmer } from '@/components/GradientShimmer';
 import { ContainerScroll } from '@/components/ContainerScroll';
 import { ScrollToWork } from '@/components/ScrollToWork';
+import { LiquidGlassLayers } from '@/components/LiquidGlass';
 import { Intro } from '@/components/Intro';
 import { ScrollCue } from '@/components/ScrollCue';
 
@@ -61,13 +62,13 @@ export default function Page() {
           </dl>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <ScrollToWork
-              targetId="work"
-              className="rounded-lg border border-white/20 bg-white/[0.08] px-5 py-2.5 text-sm font-semibold
-                         backdrop-blur-sm transition-colors hover:border-white/35 hover:bg-white/[0.14]
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-            >
-              See the work
+            {/* Still a real anchor driving the eased scroll: the glass is three
+                layers rendered inside it, not a replacement element. Swapping in
+                the snippet's <button> would have cost the smooth scroll along with
+                middle-click and open-in-new-tab. */}
+            <ScrollToWork targetId="work" className="liquid-glass">
+              <LiquidGlassLayers />
+              <span className="liquid-glass-label">See the work</span>
             </ScrollToWork>
             <a
               href="/commissions/"

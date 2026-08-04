@@ -169,6 +169,40 @@ test.describe('intro page', () => {
     expect(gap, `there is a ${Math.round(gap)}px dead zone after the hero`).toBeLessThan(200);
   });
 
+  // This one exists because the effect broke in the build and not in the source.
+  // Lightning CSS rewrote `backdrop-filter: url(...)` down to the -webkit- form
+  // alone, Chromium rejected that, and the computed value came back `none`. The
+  // stylesheet still read correctly, the page still looked fine at a glance, and
+  // only the built CSS showed it. Asserting the computed value catches the whole
+  // class of that: minifier rewrites, an SVG filter that fails to resolve, or the
+  // inline style being "tidied" back into the stylesheet by someone later.
+  test('the CTA keeps its glass refraction and its link semantics', async ({ page }) => {
+    await page.goto('/');
+
+    const cta = page.getByRole('link', { name: /see the work/i });
+    await expect(cta).toHaveAttribute('href', '#work');
+
+    const glass = await page.evaluate(() => {
+      const layer = document.querySelector('.liquid-glass-refract');
+      if (!layer) return { missing: true };
+      return {
+        backdropFilter: getComputedStyle(layer).getPropertyValue('backdrop-filter'),
+        filterDefined: !!document.getElementById('liquid-glass-displace'),
+      };
+    });
+
+    expect(glass.missing, 'the refraction layer is not being rendered').toBeFalsy();
+    expect(
+      glass.filterDefined,
+      'the SVG filter the backdrop points at is not in the document',
+    ).toBe(true);
+    // `none` is the exact symptom of the build dropping it.
+    expect(
+      glass.backdropFilter,
+      `backdrop-filter resolved to "${glass.backdropFilter}" rather than the displacement filter`,
+    ).toContain('liquid-glass-displace');
+  });
+
   test('no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/');
