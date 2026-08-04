@@ -31,18 +31,18 @@ export default function Page() {
             </GradientShimmer>
           </h1>
 
-          {/* ------------------------------------------------------------------
-              DOYUN: this is your intro. Replace both sentences below.
+          {/* Doyun's own words, with the self-introduction trimmed.
 
-              Placeholder text, but deliberately written to be true and safe to
-              ship, so that forgetting to change it costs nothing worse than a
-              generic paragraph. Two or three sentences fits the layout; much
-              past that and it collides with the stats row on a short viewport.
-              ------------------------------------------------------------------ */}
+              He wrote "Hi, I'm Doyun Lee, a high school Roblox Visual Effects artist
+              from San Diego!", which sits directly beneath a wordmark reading
+              "Doyun Lee" and an eyebrow reading "Roblox VFX artist". Saying the name
+              twice in two lines and the job title twice in three reads as filler and
+              makes the paragraph look automated. Everything else is his, phrasing and
+              exclamation included. */}
           <p className="mt-6 max-w-md text-[15px] leading-relaxed text-white/75">
-            I am a high school senior in San Diego who builds visual effects in Roblox
-            Studio. Mostly particles, trails and impact work, along with the texture
-            sheets underneath them.
+            Hi! I&apos;m a high school VFX artist from San Diego. I make combat skills
+            and simpler effects that really elevate a game, and this site is a
+            collection of my best work.
           </p>
 
           {/* A short count carries more weight than an adjective, and it is all
