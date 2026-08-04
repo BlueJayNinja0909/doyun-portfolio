@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Constellation } from '@/components/Constellation';
 import { CursorGlow } from '@/components/CursorGlow';
-import { GradientMenu } from '@/components/GradientMenu';
+import { NavShell } from '@/components/NavShell';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gives a contrast ratio of 3.6 and /45 gives 4.42, both under the 4.5 WCAG AA
             minimum for text this size; /75 clears it with margin while still reading as
             secondary against the headline, and it goes to full white on hover. */}
-        <GradientMenu />
+        {/* Overlaid on the home page so the hero can run to the top edge, in normal
+            flow elsewhere. See NavShell for why that split is necessary. */}
+        <NavShell />
         {children}
       </body>
     </html>

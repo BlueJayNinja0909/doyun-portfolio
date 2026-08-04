@@ -90,8 +90,14 @@ export function Intro({
 
   // The clip opens as a contained panel and expands to fill. Scale rather than width
   // or inset so the whole move stays on the compositor.
-  const clipScale = useTransform(scrollYProgress, [0, 0.8], [0.88, 1.06]);
-  const clipRadius = useTransform(scrollYProgress, [0, 0.5], [26, 0]);
+  // Starts at full bleed, not inset.
+  //
+  // It previously opened at 88% scale inside a 24px margin with a 26px radius, so
+  // the first screen was a rounded panel floating on the constellation backdrop
+  // with that backdrop visible all the way around it. Two competing layers, and
+  // the seam was the first thing you saw. It now fills the viewport from the start
+  // and still grows, so the move is a slow push in rather than a box unfolding.
+  const clipScale = useTransform(scrollYProgress, [0, 0.8], [1, 1.08]);
   // Overlay lifts as you scroll, so the effect is dimmest where the text sits over it
   // and clearest once the text has gone. Kept light: the left-hand gradient below is
   // what actually protects the text, so a heavy flat wash here only buries the effect
@@ -132,12 +138,8 @@ export function Intro({
       >
         {/* Clip layer */}
         <motion.div
-          className="absolute inset-3 overflow-hidden md:inset-6"
-          style={
-            still
-              ? { scale: clipScale, borderRadius: clipRadius }
-              : { borderRadius: 26 }
-          }
+          className="absolute inset-0 overflow-hidden"
+          style={still ? { scale: clipScale } : undefined}
         >
           {!playClip ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -169,13 +171,13 @@ export function Intro({
             heaviest darkening is there and the effect stays visible to the right. */}
         <div
           ref={veilRef}
-          className="pointer-events-none absolute inset-3 bg-[#050507] md:inset-6"
+          className="pointer-events-none absolute inset-0 bg-[#050507]"
           style={{ opacity: 0.42 }}
           aria-hidden="true"
         />
         <div
           ref={gradientRef}
-          className="pointer-events-none absolute inset-3 bg-gradient-to-r from-[#050507] via-[#050507]/85 to-transparent md:inset-6"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050507] via-[#050507]/85 to-transparent"
           style={{ opacity: 1 }}
           aria-hidden="true"
         />

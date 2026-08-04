@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+
 /**
  * Liquid-glass surface: a refracting backdrop plus the rim-light shadow stack.
  *
@@ -22,11 +26,48 @@
  * none of that is lost. The visual is the snippet's; the plumbing is not.
  */
 export function LiquidGlassLayers() {
+  const probeRef = useRef<HTMLSpanElement>(null);
+  const [flowing, setFlowing] = useState(false);
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReduced(query.matches);
+    sync();
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, []);
+
+  // Bound to the host anchor rather than to these layers.
+  //
+  // The layers are pointer-events: none, which they have to be or they would eat
+  // the click meant for the link, so they can never see a hover themselves. Focus
+  // is included so the glass responds to the keyboard the same way it responds to
+  // a pointer; neither event bubbles, hence listening on the element directly.
+  useEffect(() => {
+    const host = probeRef.current?.parentElement;
+    if (!host) return;
+    const start = () => setFlowing(true);
+    const stop = () => setFlowing(false);
+    host.addEventListener('pointerenter', start);
+    host.addEventListener('pointerleave', stop);
+    host.addEventListener('focus', start);
+    host.addEventListener('blur', stop);
+    return () => {
+      host.removeEventListener('pointerenter', start);
+      host.removeEventListener('pointerleave', stop);
+      host.removeEventListener('focus', start);
+      host.removeEventListener('blur', stop);
+    };
+  }, []);
+
   return (
     <>
       {/* The rim. Inset shadows on all four sides give the thick-glass edge, and
-          the single outer glow lifts it off the background. */}
-      <span className="liquid-glass-rim" aria-hidden="true" />
+          the single outer glow lifts it off the background. Also the element the
+          hover listeners are hung from, via its parent. */}
+      <span ref={probeRef} className="liquid-glass-rim" aria-hidden="true" />
       {/*
         The refraction, the layer that bends the hero clip playing behind it.
 
@@ -50,7 +91,7 @@ export function LiquidGlassLayers() {
         aria-hidden="true"
         style={{ backdropFilter: 'url("#liquid-glass-displace")' }}
       />
-      <GlassFilter />
+      <GlassFilter flowing={flowing && !reduced} />
     </>
   );
 }
@@ -59,14 +100,14 @@ export function LiquidGlassLayers() {
  * The displacement filter itself.
  *
  * `scale` is 14, well down from the snippet's 70. That value is written for a
- * large panel; at 70 the displacement is ±35px, which on a button roughly 44px
+ * large panel; at 70 the displacement is ±35px, which on a button roughly 43px
  * tall drags the backdrop further than the button's own height and smears it into
  * mush. 14 bends the clip behind it visibly without losing what it is a picture of.
  *
  * Hidden rather than removed from flow: an SVG carrying only <defs> paints nothing,
  * but it has to stay in the document for the filter reference to resolve.
  */
-function GlassFilter() {
+function GlassFilter({ flowing }: { flowing: boolean }) {
   return (
     <svg className="absolute h-0 w-0" aria-hidden="true" focusable="false">
       <defs>
@@ -84,7 +125,31 @@ function GlassFilter() {
             numOctaves="1"
             seed="1"
             result="turbulence"
-          />
+          >
+            {/*
+              What makes the glass look like liquid rather than a frozen distortion:
+              the noise field the displacement samples drifts, so the refraction
+              moves and the thing appears to flow.
+
+              Mounted only while the button is hovered or focused, and unmounted
+              otherwise, which is what actually stops it. Leaving the <animate> in
+              place and merely unreferencing the filter would not: SMIL inside
+              <defs> keeps ticking whether or not anything is using it, so an idle
+              button would pay for an animation nobody is looking at. Unmounting
+              returns baseFrequency to the static attribute above.
+
+              The values return to where they started so the loop closes without a
+              jump, and 7s is slow enough to read as liquid rather than static.
+            */}
+            {flowing && (
+              <animate
+                attributeName="baseFrequency"
+                dur="7s"
+                values="0.05 0.05;0.032 0.062;0.058 0.041;0.05 0.05"
+                repeatCount="indefinite"
+              />
+            )}
+          </feTurbulence>
           <feGaussianBlur in="turbulence" stdDeviation="2" result="blurredNoise" />
           <feDisplacementMap
             in="SourceGraphic"

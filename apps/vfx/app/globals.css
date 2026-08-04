@@ -440,3 +440,28 @@ body {
     transform: none;
   }
 }
+
+/*
+ * Very narrow screens: tighten the pills so they wrap to two rows instead of three.
+ *
+ * At 320px the labelled pills need three rows, which makes the nav 193px tall. On
+ * the home page it floats over the hero, and at that height it reached the wordmark
+ * and covered it by 8px. Shrinking the pills is better than padding the hero down
+ * to clear them, which would have cost roughly 200px of empty screen on the
+ * smallest phones for the sake of a nav that fits fine once it is sized for them.
+ */
+@media (max-width: 359px) {
+  .gmenu {
+    gap: 0.4rem;
+  }
+  .gmenu-pill {
+    height: 38px;
+    padding: 0 0.7rem;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .gmenu-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+}
