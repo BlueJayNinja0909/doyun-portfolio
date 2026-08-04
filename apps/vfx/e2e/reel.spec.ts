@@ -13,7 +13,10 @@ import { test, expect } from '@playwright/test';
 test('reel loads without fetching any video', async ({ page }) => {
   const videoRequests: string[] = [];
   page.on('request', (r) => {
-    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+    const u = r.url();
+    // The intro's hero clip is a deliberate, budgeted exception; these assertions
+    // are about the reel's full clips.
+    if (u.endsWith('.mp4') && !u.endsWith('/hero.mp4')) videoRequests.push(u);
   });
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -32,7 +35,10 @@ test('reel loads without fetching any video', async ({ page }) => {
 test('hovering a tile fetches only the small preview, never the full clip', async ({ page }) => {
   const videoRequests: string[] = [];
   page.on('request', (r) => {
-    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+    const u = r.url();
+    // The intro's hero clip is a deliberate, budgeted exception; these assertions
+    // are about the reel's full clips.
+    if (u.endsWith('.mp4') && !u.endsWith('/hero.mp4')) videoRequests.push(u);
   });
   await page.goto('/');
 
@@ -65,7 +71,10 @@ test('hovering a tile fetches only the small preview, never the full clip', asyn
 test('sweeping quickly across tiles does not fetch every preview', async ({ page }) => {
   const videoRequests: string[] = [];
   page.on('request', (r) => {
-    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+    const u = r.url();
+    // The intro's hero clip is a deliberate, budgeted exception; these assertions
+    // are about the reel's full clips.
+    if (u.endsWith('.mp4') && !u.endsWith('/hero.mp4')) videoRequests.push(u);
   });
   await page.goto('/');
 
@@ -102,7 +111,10 @@ test('hovering fetches no video under reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const videoRequests: string[] = [];
   page.on('request', (r) => {
-    if (r.url().endsWith('.mp4')) videoRequests.push(r.url());
+    const u = r.url();
+    // The intro's hero clip is a deliberate, budgeted exception; these assertions
+    // are about the reel's full clips.
+    if (u.endsWith('.mp4') && !u.endsWith('/hero.mp4')) videoRequests.push(u);
   });
   await page.goto('/');
   await page.getByRole('button').first().hover();
@@ -113,7 +125,8 @@ test('hovering fetches no video under reduced motion', async ({ page }) => {
 test('clicking a tile opens the lightbox and loads that clip', async ({ page }) => {
   const videoRequests: { url: string; status: number }[] = [];
   page.on('response', (r) => {
-    if (r.url().endsWith('.mp4')) videoRequests.push({ url: r.url(), status: r.status() });
+    const u = r.url();
+    if (u.endsWith('.mp4') && !u.endsWith('/hero.mp4')) videoRequests.push({ url: u, status: r.status() });
   });
 
   await page.goto('/');

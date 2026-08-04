@@ -3,6 +3,8 @@ import { ReelGrid } from '@/components/ReelGrid';
 import { GradientShimmer } from '@/components/GradientShimmer';
 import { ContainerScroll } from '@/components/ContainerScroll';
 import { ScrollToWork } from '@/components/ScrollToWork';
+import { Intro } from '@/components/Intro';
+import { ScrollCue } from '@/components/ScrollCue';
 
 export default function Page() {
   const effects = loadEffects();
@@ -12,49 +14,62 @@ export default function Page() {
   return (
     <main>
       {/* ---------------------------------------------------------------- intro */}
-      {/* Single column, left-aligned, capped at a readable measure. Letting the text run
-          the full 6xl width would give a line length that is tiring to read; the
-          constellation field carries the empty right-hand space instead. */}
-      <section className="mx-auto flex min-h-[80vh] max-w-6xl flex-col justify-center px-6 pb-16 pt-20">
+      <Intro cue={<ScrollCue />}>
         <div className="w-full max-w-2xl">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-white/70">
             Roblox visual effects
           </p>
 
           {/* LCP element. The shimmer is a background sweep on text that is already
-              painted — it never delays or hides the wordmark, and under reduced motion
-              it renders as a static gradient rather than not at all. */}
+              painted, so it never delays or hides the wordmark, and under reduced
+              motion it renders as a static gradient rather than not at all. */}
           <h1 className="mt-5 text-[clamp(2.25rem,7.5vw,4.5rem)] font-extrabold leading-[1.02] tracking-[-0.045em]">
             <GradientShimmer duration={2.6} pauseBetween={2600} spread={2.4}>
               Doyun Lee VFX
             </GradientShimmer>
           </h1>
 
-          <p className="mt-6 max-w-md text-[15px] leading-relaxed text-white/70">
-            I build particles, trails and impact effects in Roblox Studio — and the
-            texture sheets underneath them. Sixteen effects and nineteen hand-built
-            flipbooks below.
+          <p className="mt-6 max-w-md text-[15px] leading-relaxed text-white/75">
+            I build particles, trails and impact effects in Roblox Studio, and the
+            texture sheets underneath them.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          {/* A short count carries more weight than an adjective, and it is all
+              verifiable further down the page. */}
+          <dl className="mt-7 flex flex-wrap gap-x-9 gap-y-3">
+            {[
+              ['16', 'effects'],
+              ['19', 'texture sheets'],
+              ['Open', 'for commissions'],
+            ].map(([value, label]) => (
+              <div key={label}>
+                <dt className="text-xl font-semibold tabular-nums">{value}</dt>
+                <dd className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/60">
+                  {label}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             <ScrollToWork
               targetId="work"
-              className="rounded-lg border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-semibold
-                         transition-colors hover:border-white/30 hover:bg-white/[0.10]
+              className="rounded-lg border border-white/20 bg-white/[0.08] px-5 py-2.5 text-sm font-semibold
+                         backdrop-blur-sm transition-colors hover:border-white/35 hover:bg-white/[0.14]
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             >
               See the work
             </ScrollToWork>
             <a
               href="/commissions/"
-              className="px-2 py-2.5 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline
+              className="px-2 py-2.5 text-sm text-white/75 underline-offset-4 hover:text-white hover:underline
                          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             >
               Commissions open
             </a>
           </div>
         </div>
-      </section>
+      </Intro>
 
       {/* ----------------------------------------------------------------- work */}
       {/* overflow-x-clip because the scroll panel is rotated in 3D: a 22-degree

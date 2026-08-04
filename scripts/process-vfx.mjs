@@ -17,6 +17,19 @@ fs.mkdirSync(OUT_T, { recursive: true });
 
 const ff = (args) => execFileSync(FF, ['-v', 'error', '-y', ...args], { stdio: 'inherit' });
 
+/**
+ * Hero background encode, emitted for whichever clip is flagged `hero` in clips.json.
+ *
+ * It is its own size and quality because it does a different job from a tile preview:
+ * it sits full bleed behind the wordmark, heavily darkened, and it loads on every
+ * visit. Wider than a preview so it does not look soft stretched across a desktop, and
+ * more compressed because most of its detail is hidden under the overlay anyway.
+ */
+const HERO_SECONDS = 3.6;
+const HERO_WIDTH = 960;
+const HERO_CRF = 36;
+const HERO_MAX_KB = 260;
+
 /** Hover-preview shape. Short enough to loop without feeling repetitive. */
 const PREVIEW_SECONDS = 5;
 /** Seconds of run-up before the saturation peak, so the effect builds on screen. */
@@ -130,6 +143,34 @@ for (const clip of clips) {
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
     previewPath,
   ]);
+
+  // One clip doubles as the hero background. Starting a little before the peak gives
+  // the effect room to build rather than opening mid flash.
+  if (clip.hero) {
+    const heroPath = path.join(OUT_V, 'hero.mp4');
+    // `heroAt` picks the window by hand. Deriving it from the saturation peak works for
+    // tile previews but not here: the peak is a single instant, and a hero needs several
+    // continuous seconds that are all worth looking at. On one clip the derived window
+    // landed after the effect had dissipated, leaving empty sky and a stray mouse cursor.
+    const heroStart = clip.heroAt !== undefined ? clip.heroAt : Math.max(0, t - PREVIEW_LEAD * 1.5);
+    const heroResult = encodeWithinBudget(heroPath, HERO_MAX_KB, HERO_CRF, 3, (crf) => [
+      '-ss', String(heroStart), '-t', String(HERO_SECONDS), '-i', input, '-an',
+      // `heroCrop` overrides the tile crop for the hero only. The tile crop keeps the
+      // whole Studio viewport, which is fine at thumbnail size but puts floating
+      // plugin panels and the command bar on screen when it fills the page.
+      '-vf', `crop=${clip.heroCrop ?? clip.crop},scale=${HERO_WIDTH}:-2:flags=lanczos`,
+      '-c:v', 'libx264', '-profile:v', 'main', '-crf', String(crf), '-preset', 'slow',
+      '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+      heroPath,
+    ]);
+    ff(['-ss', String(heroStart + 1), '-i', input, '-frames:v', '1',
+        // `heroCrop` overrides the tile crop for the hero only. The tile crop keeps the
+      // whole Studio viewport, which is fine at thumbnail size but puts floating
+      // plugin panels and the command bar on screen when it fills the page.
+      '-vf', `crop=${clip.heroCrop ?? clip.crop},scale=${HERO_WIDTH}:-2:flags=lanczos`, '-q:v', '6',
+        path.join(OUT_V, 'hero-poster.jpg')]);
+    console.log(`  hero: ${heroResult.kb}KB from ${clip.slug} at ${heroStart.toFixed(1)}s`);
+  }
 
   const note = (r, startQ) => (r.overBudget ? ' OVER' : r.quality !== startQ ? `@${r.quality}` : '');
   console.log(

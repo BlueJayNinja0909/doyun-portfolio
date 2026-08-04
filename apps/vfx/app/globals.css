@@ -130,6 +130,37 @@ body {
 }
 
 /*
+ * Scroll cue. The tick travels the length of its track and repeats, which reads as an
+ * invitation to scroll rather than a static mark. Transform only, so it never triggers
+ * layout, and it holds still under reduced motion where the track alone says the same
+ * thing.
+ */
+@keyframes scroll-cue-travel {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(250%);
+    opacity: 0;
+  }
+}
+
+.scroll-cue-tick {
+  animation: scroll-cue-travel 2.1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue-tick {
+    animation: none;
+    transform: translateY(0);
+  }
+}
+
+/*
  * Scroll-linked 3D tilt for the reel panel.
  *
  * The transform values are always applied by Motion; this media query neutralises them

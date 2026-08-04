@@ -133,14 +133,20 @@ test.describe('tile spotlight', () => {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 6 });
     await page.waitForTimeout(1200);
 
-    // The video's own box must be the topmost thing at its centre — no overlay,
+    // The video's own box must be the topmost thing at its centre: no overlay,
     // gradient or title strip sitting on the footage.
-    const tag = await page.evaluate(() => {
-      const v = document.querySelector('video')!;
+    //
+    // Scoped to the tile's own video. A page-wide `querySelector('video')` now matches
+    // the intro's hero clip, which is the first video in the document and has nothing
+    // to do with this assertion.
+    const tag = await tile.evaluate((el) => {
+      const v = el.querySelector('video');
+      if (!v) return 'no-video';
       const r = v.getBoundingClientRect();
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return hit?.tagName.toLowerCase();
     });
+    expect(tag, 'the tile preview never started, so this test proves nothing').not.toBe('no-video');
     expect(tag, 'something is layered over the playing clip').toBe('video');
   });
 
@@ -165,11 +171,20 @@ test.describe('tile spotlight', () => {
     // guards against the two interfering.
     const videos: string[] = [];
     page.on('request', (r) => {
-      if (r.url().endsWith('.mp4')) videos.push(r.url());
+      const u = r.url();
+    // The intro's hero clip is a deliberate, budgeted exception; these assertions
+    // are about the reel's full clips.
+    if (u.endsWith('.mp4') && !u.endsWith('/hero.mp4')) videos.push(u);
     });
     await page.goto('/');
-    await page.getByRole('button').first().hover();
-    await page.waitForTimeout(500);
+    const tile = page.getByRole('button').first();
+    // The reel sits below the intro now, so the tile has to be scrolled into view before
+    // the hover lands on it at all.
+    await tile.scrollIntoViewIfNeeded();
+    await tile.hover();
+    await expect
+      .poll(() => videos.length, { message: 'hovering never triggered a preview', timeout: 5000 })
+      .toBeGreaterThan(0);
     for (const url of videos) expect(url).toMatch(/-preview\.mp4$/);
   });
 });
