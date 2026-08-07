@@ -166,7 +166,7 @@ test('the ambient backdrop contributes visible, non-flat pixels', async ({ page 
   const height = meta.height ?? 800;
 
   // .ambient's violet radial gradient is centred at 20% x / 0% y of the
-  // viewport, and the ambient.webp texture + pink gradient add further
+  // viewport, and the teal and pink gradients add further
   // variation elsewhere. Sample a wide band across the top of the page —
   // inside the nav bar, which paints no background of its own — and check
   // two things that together rule out both failure directions:

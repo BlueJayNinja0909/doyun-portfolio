@@ -177,7 +177,7 @@ test.describe('texture sheet loading', () => {
     const sheets = new Set<string>();
     page.on('request', (r) => {
       const u = r.url();
-      if (u.endsWith('.webp') && !u.endsWith('ambient.webp')) sheets.add(u);
+      if (u.endsWith('.webp')) sheets.add(u);
     });
 
     await page.goto('/textures/');

@@ -30,15 +30,35 @@ body {
  * real CPU while being completely invisible. The ground colour belongs on <html>
  * and nowhere else.
  */
+/*
+ * Gradients only. No raster, and deliberately no grain.
+ *
+ * This used to layer a 1600x900 WebP with the glow baked into it, stretched with
+ * `background-size: cover`. At 1080p that is roughly 1:1 and looks fine. On a 4K
+ * panel it is a 2.4x upscale of a 22KB lossy encode of a smooth dark gradient, which
+ * is close to the worst case for WebP: the banding it already contained got
+ * magnified into visible mottling across the whole page.
+ *
+ * Measured on a flat patch at device pixel ratio 2, comparing each pixel against a
+ * heavily blurred version of itself to isolate blotching from pixel noise: the old
+ * backdrop deviated 1.063, a pure CSS gradient deviates 0.000. Gradients resample
+ * exactly at any resolution, so this is clean on every display and drops a request.
+ *
+ * An earlier attempt at this added SVG turbulence grain to keep some texture. It
+ * measured 3.479 mean neighbour delta against the original's 0.271, which is far
+ * grainier than what it replaced and the opposite of what was wanted. Grain and
+ * upscaled compression artefacts look similar at a glance but are not the same
+ * thing, and this background wants neither.
+ */
 .ambient {
   position: fixed;
   inset: 0;
   z-index: -2;
   pointer-events: none;
   background-image:
-    url('/textures/ambient.webp'),
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(120, 80, 255, 0.14), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 85% 20%, rgba(255, 94, 180, 0.10), transparent 60%);
+    radial-gradient(ellipse 72% 55% at 18% 6%, rgba(124, 88, 255, 0.20), transparent 62%),
+    radial-gradient(ellipse 55% 46% at 32% 72%, rgba(64, 172, 178, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 88% 18%, rgba(255, 94, 180, 0.09), transparent 60%);
   background-attachment: fixed;
   background-position: center;
   background-size: cover;
