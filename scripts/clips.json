@@ -92,7 +92,7 @@
     "src": "better spin vfx.mp4",
     "crop": "1520:874:280:142",
     "hero": true,
-    "heroCrop": "1400:700:300:220",
+    "heroCrop": "1520:720:280:200",
     "heroAt": 5.2
   }
 ]

@@ -39,14 +39,23 @@ const ff = (args) => execFileSync(FF, ['-v', 'error', '-y', ...args], { stdio: '
  */
 const HERO_SECONDS = 2.4;
 /**
- * The hero crop is 1400x700, so 1400 is the ceiling: anything wider upscales and costs
- * bytes for no detail (measured at 1600 and 1920, both pure waste). This now sits at that
- * ceiling rather than just under it, because the hero is the one asset that is displayed
- * full bleed at whatever size the screen is, so it is the only place where the last few
- * hundred pixels of source resolution are actually visible.
+ * Native width of the hero crop, which is 1520x720.
+ *
+ * The crop was 1400 wide; the region genuinely free of Studio chrome is 1520, since
+ * the plugin panel ends at x 266 and the axis gizmo starts at x 1810. Those 120
+ * columns were being discarded for nothing.
+ *
+ * It does not solve the underlying problem and it is worth being plain about that.
+ * The hero is full bleed, so a 3840-wide display scales this to 3840: at 1400 that
+ * was a 2.74x upscale and at 1520 it is 2.53x. The recording is 1918x1078. No encode
+ * makes a 1080p source sharp on a 4K panel; only a higher-resolution capture can.
+ *
+ * CRF 20 rather than 24 for the same reason. Upscaling magnifies compression
+ * artefacts along with everything else, so a cleaner source is worth more here than
+ * it would be at 1:1.
  */
-const HERO_WIDTH = 1400;
-const HERO_CRF = 24;
+const HERO_WIDTH = 1520;
+const HERO_CRF = 20;
 /**
  * A genuine ceiling, not a quality knob.
  *
