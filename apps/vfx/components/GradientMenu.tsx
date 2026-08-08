@@ -1,4 +1,4 @@
-import { User, Sparkles, LayoutGrid, Mail } from 'lucide-react';
+import { User, Sparkles, LayoutGrid, Mail, LineChart } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 /**
@@ -31,6 +31,8 @@ type Item = {
   /** Both stops come from GradientShimmer's ramp, so the nav and the wordmark agree. */
   from: string;
   to: string;
+  /** Off-site, so it opens in a new tab and gets the usual rel treatment. */
+  external?: boolean;
 };
 
 const ITEMS: Item[] = [
@@ -38,17 +40,31 @@ const ITEMS: Item[] = [
   { title: 'VFX', href: '/#work', icon: <Sparkles />, from: '#C77BFF', to: '#FF7BC3' },
   { title: 'Textures', href: '/textures/', icon: <LayoutGrid />, from: '#FF7BC3', to: '#FF9E7B' },
   { title: 'Commissions', href: '/commissions/', icon: <Mail />, from: '#7BE0FF', to: '#8B7BFF' },
+  // The other half of the portfolio. Until now the two sites had no link between
+  // them in either direction, so anyone arriving at one had no way of knowing the
+  // other existed.
+  {
+    title: 'Research',
+    href: 'https://doyun-portfolio-academic.vercel.app/',
+    icon: <LineChart />,
+    from: '#7BE0FF',
+    to: '#C77BFF',
+    external: true,
+  },
 ];
 
 export function GradientMenu() {
   return (
     <nav aria-label="Primary" className="mx-auto max-w-6xl px-6 py-5">
       <ul className="gmenu">
-        {ITEMS.map(({ title, href, icon, from, to }) => (
+        {ITEMS.map(({ title, href, icon, from, to, external }) => (
           <li key={href}>
             <a
               href={href}
               className="gmenu-pill"
+              {...(external
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {})}
               // Custom properties need the cast: React's CSSProperties has no index
               // signature, so `--x` is not assignable without it.
               style={{ '--from': from, '--to': to } as React.CSSProperties}

@@ -12,13 +12,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="bg-[#FBFAF7] text-[#14140F] antialiased">
-        <nav className="mx-auto flex max-w-3xl items-baseline justify-between px-6 py-6 text-[11px] uppercase tracking-[0.16em] text-stone-600">
+        <nav className="mx-auto flex max-w-3xl items-baseline justify-between gap-x-6 px-6 py-6 text-[11px] uppercase tracking-[0.16em] text-stone-600">
           <a href="/" className="hover:text-stone-900">
             Doyun Lee
           </a>
-          <a href="/work/transit-vs-driving/" className="hover:text-stone-900">
-            Transit study
-          </a>
+          <span className="flex flex-wrap items-baseline justify-end gap-x-5 gap-y-1">
+            <a href="/work/transit-vs-driving/" className="hover:text-stone-900">
+              Transit study
+            </a>
+            {/* The other half of the portfolio. The two sites had no link between them
+                in either direction, so anyone arriving at one had no way of knowing
+                the other existed. */}
+            <a
+              href="https://doyun-vfx-alpha.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-stone-900"
+            >
+              VFX work
+            </a>
+          </span>
         </nav>
 
         {children}
