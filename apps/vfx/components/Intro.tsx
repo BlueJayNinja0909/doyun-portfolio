@@ -19,16 +19,6 @@ import {
  * Writing it on each change is unambiguous, costs one property assignment per frame,
  * and is easy to check.
  */
-/**
- * Pause between hero replays, in ms.
- *
- * 3.2s against a 2.4s clip, so the effect fires a little over every five seconds
- * instead of every two and a bit. Long enough that the page feels calm while you
- * read the intro, short enough that anyone arriving mid-pause does not conclude the
- * background is a still image.
- */
-const HERO_REPLAY_DELAY_MS = 3200;
-
 function useOpacityFrom(value: MotionValue<number>, enabled: boolean) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -83,36 +73,6 @@ export function Intro({
   useEffect(() => setMounted(true), []);
   const playClip = mounted && !reduced;
 
-  /**
-   * Rest between plays, rather than looping straight back.
-   *
-   * The clip is 2.4s, chosen because that is the longest window of the spin footage
-   * where the effect never dies down. Played on `loop` that means the staff spins
-   * again every 2.4s with no gap, which is far too insistent for something sitting
-   * behind body text: it pulls the eye back every couple of seconds and never lets
-   * the page settle. The clip now plays, holds on its last frame, and starts again
-   * after a pause, so the effect reads as something that happens periodically rather
-   * than a two-second GIF.
-   */
-  const clipRef = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const video = clipRef.current;
-    if (!video || !playClip) return;
-    let timer = 0;
-    const replay = () => {
-      timer = window.setTimeout(() => {
-        video.currentTime = 0;
-        // Autoplay can be refused if the tab lost its gesture context; there is
-        // nothing to recover here, the poster frame simply stays.
-        void video.play().catch(() => {});
-      }, HERO_REPLAY_DELAY_MS);
-    };
-    video.addEventListener('ended', replay);
-    return () => {
-      video.removeEventListener('ended', replay);
-      window.clearTimeout(timer);
-    };
-  }, [playClip]);
 
   // Progress across the pin, 0 when the section's top meets the top of the viewport and
   // 1 at the moment the sticky child is released.
@@ -193,14 +153,16 @@ export function Intro({
             />
           ) : (
             <video
-              ref={clipRef}
               src="/videos/hero.mp4"
               poster="/videos/hero-poster.jpg"
               autoPlay
               muted
-              // No `loop`. The clip is 2.4s, and restarting the instant it ends made
-              // the spin fire roughly every two seconds, which reads as a stutter
-              // rather than a background. See HERO_REPLAY_DELAY_MS.
+              // Loops continuously. A 3.2s pause between plays was tried and looked
+              // worse: holding a still frame that long reads as the video having
+              // stalled rather than as the scene resting, and the restart after it is
+              // a visible cut. The native loop keeps the motion unbroken, which is
+              // what a background wants.
+              loop
               playsInline
               preload="auto"
               aria-hidden="true"
