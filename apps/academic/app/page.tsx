@@ -16,11 +16,12 @@ type Entry = { period: string; title: string; body: string };
 
 const BACKGROUND: Entry[] = [
   {
-    period: '2026',
-    title: 'Research intern, Cincy Carbon',
+    period: '2026–present',
+    title: 'Co-president and founder, RBHS Keyboard Club',
     body:
-      'Through Ladder Internships, on sustainable aviation fuel and carbon-to-fuel ' +
-      'pathways.',
+      'Co-founded a hands-on mechanical keyboard club with 40+ student sign-ups. ' +
+      'Organizes workshops and sponsor-supported switch and keycap demonstrations; ' +
+      'developing a custom 3×3 macropad.',
   },
   {
     period: 'Aug 2025 to present',
@@ -30,15 +31,15 @@ const BACKGROUND: Entry[] = [
       'monthly joint practices with clubs from other schools.',
   },
   {
-    period: 'Jun 2025 to present',
+    period: '2024 to present',
     title: 'Referee, Federal Taekwondo Association',
     body:
-      'Officiates regional matches. Received the association&rsquo;s Volunteer Appreciation ' +
-      'Award for the 2026 San Diego Open.',
+      'Officiates taekwondo matches as a paid referee and holds a USA Taekwondo ' +
+      'D-Level Kyorugi referee certification.',
   },
   {
-    period: 'Apr 2022 to present',
-    title: 'Special needs assistant, Elite Taekwondo Academy',
+    period: '2021 to present',
+    title: 'Volunteer instructor, Taekwondo',
     body:
       'Works with children with autism and ADHD in both inclusive and regular classes, ' +
       'adapting how a lesson is taught to how a given student learns.',
@@ -64,10 +65,10 @@ const BACKGROUND: Entry[] = [
   },
   {
     period: '2023 to present',
-    title: 'Royal Regiment and Symphonic Band',
+    title: 'Royal Regiment and Wind Ensemble',
     body:
-      'Marching band in SCSBOA Division 6A, the highest competitive division, and second ' +
-      'chair clarinet. Performed at Carnegie Hall in April 2026.',
+      'Clarinetist in marching band and Wind Ensemble. Performed at Carnegie Hall in April ' +
+      '2026 and placed fifth among more than 30 clarinetists in the band programme.',
   },
 ];
 
@@ -80,6 +81,8 @@ const AWARDS: { name: string; scope: string }[] = [
   { name: 'Student Leadership Award, San Diego Korean School', scope: 'Regional, 2026' },
   { name: 'Volunteer Appreciation Award, Federal Taekwondo Association', scope: 'Regional, 2026' },
   { name: 'Certificate of Recognition, County of San Diego', scope: 'Regional, 2024' },
+  { name: 'Outstanding Leadership Award, California State Assembly', scope: 'State, 2026' },
+  { name: 'Next Generation Leadership Award, Korean Education Center LA', scope: 'Regional, 2026' },
   { name: 'Rising Performer Award, RBHS', scope: 'School, 2025' },
 ];
 
@@ -92,28 +95,46 @@ export default function Page() {
           Doyun Lee
         </h1>
         <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-stone-700">
-          I measure things I don&rsquo;t know the answer to, and build things to find out.
-          Currently a senior at Rancho Bernardo High School in San Diego, headed for economics.
+          I like finding the assumptions hiding inside a problem, then testing them with data
+          or a working prototype. I&rsquo;m a senior at Rancho Bernardo High School in San Diego,
+          interested in economics, engineering and the systems that shape everyday life.
         </p>
       </header>
 
       <section className="mt-14 border-t border-stone-200 pt-10">
         <h2 className="text-[11px] uppercase tracking-[0.18em] text-stone-600">Work</h2>
 
+        <a href="/work/carbon-to-fuel/" className="group mt-6 block border-b border-stone-200 pb-8">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-stone-500">
+            Research internship &middot; Summer 2026
+          </p>
+          <h3 className="mt-2 font-serif text-2xl leading-snug tracking-[-0.01em] group-hover:underline">
+            Can turning captured CO₂ into fuel make economic sense?
+          </h3>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-stone-700">
+            At CincyCarbon, I helped a four-intern team examine electrochemical CO₂-to-ethanol
+            production: Faradaic efficiency, stack sizing, separation, electricity costs and
+            the conditions a real plant would need to break even.
+          </p>
+          <span className="mt-3 inline-block text-[13px] text-stone-600 group-hover:text-stone-900">
+            Read the project notes &rarr;
+          </span>
+        </a>
+
         <a
           href="/work/transit-vs-driving/"
-          className="group mt-6 block border-b border-stone-200 pb-8"
+          className="group mt-8 block border-b border-stone-200 pb-8"
         >
           <p className="text-[11px] uppercase tracking-[0.14em] text-stone-500">
-            Independent research &middot; June 2025
+            Independent research &middot; 2026
           </p>
           <h3 className="mt-2 font-serif text-2xl leading-snug tracking-[-0.01em] group-hover:underline">
             In San Diego, the electric car is cleaner than the bus.
           </h3>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-stone-700">
             Four Rancho Bernardo routes measured door to door for cost, time and carbon, plus a
-            16-person survey on why people drive anyway. The transit trip to school is 46
-            minutes — 42 of them on foot.
+            local survey on why people drive anyway. I presented the findings to the Rancho
+            Bernardo Community Council, including a school route with 42 minutes of walking.
           </p>
           <span className="mt-3 inline-block text-[13px] text-stone-600 group-hover:text-stone-900">
             Read the study &rarr;
@@ -133,7 +154,7 @@ export default function Page() {
             An obstacle course that only opens if you can do the calculus.
           </h3>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-stone-700">
-            Genesis Bloom is a Roblox game built solo across 25 stages, where answering a
+            Genesis Bloom is a Roblox game built solo across 30 stages, where answering a
             curriculum-aligned AP Calculus question is what unlocks the next one. Every system is
             mine: the Lua for checkpoints, multiplayer and saved progress, the interface, the map,
             and the effects work throughout.
@@ -146,6 +167,21 @@ export default function Page() {
           >
             Play it on Roblox &rarr;
           </a>
+        </div>
+
+        <div className="mt-8 border-b border-stone-200 pb-8">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-stone-500">
+            Design and engineering &middot; 2026–present
+          </p>
+          <h3 className="mt-2 font-serif text-2xl leading-snug tracking-[-0.01em]">
+            Building a keyboard club, then building our own macropad.
+          </h3>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-stone-700">
+            I co-founded the RBHS Keyboard Club to make a niche hobby accessible to more
+            students. We secured support from keyboard brands, organized hands-on activities,
+            and began designing a 3×3 USB-C, hot-swap macropad with a 3D-printed case.
+            It&rsquo;s an ongoing build, not a finished product.
+          </p>
         </div>
       </section>
 
