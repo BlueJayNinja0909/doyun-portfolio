@@ -89,7 +89,8 @@ const AWARDS: { name: string; scope: string }[] = [
 export default function Page() {
   return (
     <main className="mx-auto max-w-3xl px-6 pb-24">
-      <header className="pt-10">
+      <header className="pt-12">
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.19em] text-[#3c7358]">Research · Engineering · Design</p>
         {/* LCP element — not animated. */}
         <h1 className="font-serif text-[clamp(2rem,7vw,3.25rem)] leading-[1.08] tracking-[-0.015em]">
           Doyun Lee
@@ -104,20 +105,22 @@ export default function Page() {
       <section className="mt-14 border-t border-stone-200 pt-10">
         <h2 className="text-[11px] uppercase tracking-[0.18em] text-stone-600">Work</h2>
 
-        <a href="/work/carbon-to-fuel/" className="group mt-6 block border-b border-stone-200 pb-8">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-stone-500">
+        <a href="/work/carbon-to-fuel/" className="group relative mt-6 block overflow-hidden rounded-2xl bg-[#173f33] p-7 text-[#f0f5ed] transition-transform hover:-translate-y-1 sm:p-9">
+          <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full border border-[#afd8b44d]" aria-hidden="true"/>
+          <div className="pointer-events-none absolute -right-4 -top-12 h-48 w-48 rounded-full border border-[#afd8b44d]" aria-hidden="true"/>
+          <p className="relative text-[11px] uppercase tracking-[0.14em] text-[#b1d8bc]">
             Research internship &middot; Summer 2026
           </p>
-          <h3 className="mt-2 font-serif text-2xl leading-snug tracking-[-0.01em] group-hover:underline">
+          <h3 className="relative mt-4 max-w-lg font-serif text-3xl leading-snug tracking-[-0.02em] group-hover:underline">
             Can turning captured CO₂ into fuel make economic sense?
           </h3>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-stone-700">
+          <p className="relative mt-4 max-w-xl text-[15px] leading-relaxed text-[#d1e0d4]">
             At CincyCarbon, I helped a four-intern team examine electrochemical CO₂-to-ethanol
             production: Faradaic efficiency, stack sizing, separation, electricity costs and
             the conditions a real plant would need to break even.
           </p>
-          <span className="mt-3 inline-block text-[13px] text-stone-600 group-hover:text-stone-900">
-            Read the project notes &rarr;
+          <span className="relative mt-7 inline-block rounded-full border border-[#a6cbb5] px-4 py-2 text-[13px] text-[#e6f4e9] group-hover:bg-[#ffffff20]">
+            Explore case study &rarr;
           </span>
         </a>
 
