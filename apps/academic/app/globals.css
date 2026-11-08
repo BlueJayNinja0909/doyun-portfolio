@@ -32,3 +32,26 @@
 .prose-study p:first-child {
   margin-top: 0;
 }
+
+/* CincyCarbon case study: restrained editorial style with a technical palette. */
+.carbon-page { color: #18352a; }
+.carbon-hero {
+  background: radial-gradient(circle at 89% 18%, #356f56 0, transparent 34%),
+              linear-gradient(135deg, #112f28 0%, #1a4737 65%, #12342c 100%);
+  isolation: isolate;
+  min-height: 470px;
+}
+.carbon-orbit { position: absolute; right: -140px; top: -165px; border: 1px solid #b4d7bb30; border-radius: 50%; width: 610px; height: 610px; pointer-events: none; }
+.carbon-orbit-two { right: -60px; top: -75px; width: 420px; height: 420px; }
+.carbon-molecule { position: absolute; right: 6%; bottom: 10%; color: #d6ead81f; font: 500 clamp(2rem, 5vw, 5rem) Georgia, serif; white-space: nowrap; pointer-events: none; }
+.carbon-molecule span { color: #a7dda53b; }
+.carbon-tag { border: 1px solid #b4d7bb59; background: #ffffff0d; padding: 0.6rem 0.85rem; border-radius: 999px; }
+.carbon-section { max-width: 72rem; padding: 0 1.5rem; margin: 5rem auto 0; }
+.carbon-eyebrow { color: #45755c; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+.carbon-heading { margin-top: 0.75rem; max-width: 50rem; font: 400 clamp(2.2rem, 4.5vw, 3.3rem)/1.13 Georgia, serif; letter-spacing: -0.035em; }
+@media (max-width: 640px) {
+  .carbon-hero { min-height: 430px; }
+  .carbon-orbit { opacity: 0.5; }
+  .carbon-molecule { right: 6%; bottom: 4%; }
+  .carbon-section { margin-top: 4rem; }
+}
